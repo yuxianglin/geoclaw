@@ -119,7 +119,7 @@ PROGRAM MAIN_OFFLINE
   CALL timeit(3, 'new')
   IF (mype_world == 0) &
        WRITE (*, '(/2x, a)') 'PDAF test suite - offline mode: START ASSIMILATION'
-!  CALL assimilation_pdaf_offline()
+  CALL assimilation_pdaf_offline()
 
   ! Syncronize at barrier for exit
   CALL MPI_Barrier(MPI_COMM_WORLD, MPIerr) 

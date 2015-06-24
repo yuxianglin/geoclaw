@@ -38,7 +38,7 @@ OPT = -O3 -fdefault-real-8
 OPT_LNK = $(OPT)
 
 # Linking libraries (BLAS, LAPACK, if required: MPI)
-LINK_LIBS =-L/usr/lib -llapack  -lblas   -lm
+LINK_LIBS =-L/usr/lib64 -llapack  -lblas  -lm
 
 # Specifications for the archiver
 AR_SPEC = 
