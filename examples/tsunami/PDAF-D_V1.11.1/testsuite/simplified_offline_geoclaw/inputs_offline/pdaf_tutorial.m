@@ -1,7 +1,7 @@
 % Script to generate files for the PDAF offline tutorial
 
-dim_x = 201
-dim_y = 201
+dim_x = 51
+dim_y = 51
 dim_ens = 9
 stddev_obs = 0.5
 dxobs = 5;
@@ -11,7 +11,7 @@ dyobs = 4;
 % True field
 for j=1:dim_x
     for i=1:dim_y
-        field(i,j) = sin(pi*(i/201+j/201));
+        field(i,j) = sin(pi*(i/51+j/51));
     end
 end
 
@@ -30,7 +30,7 @@ title('True field','fontsize',18)
 for k=1:dim_ens
     for j=1:dim_x
         for i=1:dim_y
-            ens(i,j,k) = sin(pi*(i/201+j/201)+0.5*pi*(k+5)/dim_ens);
+            ens(i,j,k) = sin(pi*(i/51+j/51)+0.5*pi*(k+5)/dim_ens);
         end
     end
     figure

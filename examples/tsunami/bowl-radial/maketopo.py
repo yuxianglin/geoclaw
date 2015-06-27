@@ -23,8 +23,8 @@ def makeqinit():
     """
     Create qinit data file
     """
-    nxpoints = 101
-    nypoints = 101
+    nxpoints = 51
+    nypoints = 51
     xlower = -50.e0
     xupper = 50.e0
     yupper = 50.e0

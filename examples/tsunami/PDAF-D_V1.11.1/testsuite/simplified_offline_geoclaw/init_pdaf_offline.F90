@@ -158,6 +158,7 @@ SUBROUTINE init_pdaf()
      filter_param_i(5) = 0           ! Smoother lag (not implemented here)
      filter_param_r(1) = forget      ! Forgetting factor
      
+     ! In PDAF_interfaces_module.F90
      CALL PDAF_init(filtertype, subtype, 0, &
           filter_param_i, 6,&
           filter_param_r, 2, &

@@ -112,7 +112,7 @@ PROGRAM MAIN_OFFLINE
 
   ! *** Initialize PDAF ***
   CALL timeit(4, 'new')
-  CALL init_pdaf()
+  CALL init_pdaf() !In init_pdaf_offline.F90
   CALL timeit(4, 'old')
 
   ! *** Perform analysis ***

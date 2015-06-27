@@ -233,7 +233,7 @@ def setrun(claw_pkg='geoclaw'):
     # Specify when checkpoint files should be created that can be
     # used to restart a computation.
 
-    clawdata.checkpt_style = 0
+    clawdata.checkpt_style = 1
 
     if clawdata.checkpt_style == 0:
         # Do not checkpoint at all
@@ -258,12 +258,12 @@ def setrun(claw_pkg='geoclaw'):
     amrdata = rundata.amrdata
 
     # max number of refinement levels:
-    amrdata.amr_levels_max = 4
+    amrdata.amr_levels_max = 1
 
     # List of refinement ratios at each level (length at least mxnest-1)
-    amrdata.refinement_ratios_x = [2,4,4]
-    amrdata.refinement_ratios_y = [2,4,4]
-    amrdata.refinement_ratios_t = [2,4,4]
+    amrdata.refinement_ratios_x = [1]
+    amrdata.refinement_ratios_y = [1]
+    amrdata.refinement_ratios_t = [1]
 
 
     # Specify type of each aux variable in amrdata.auxtype.

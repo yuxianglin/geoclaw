@@ -32,8 +32,8 @@ SUBROUTINE initialize()
 !EOP
 
 ! *** Model specifications ***
-  nx = 201    ! Extent of grid in x-direction
-  ny = 201    ! Extent of grid in y-direction
+  nx = 51    ! Extent of grid in x-direction
+  ny = 51    ! Extent of grid in y-direction
 
   dim_state_p   = nx * ny ! State dimension (shared via MOD_OFFLINE)
 
