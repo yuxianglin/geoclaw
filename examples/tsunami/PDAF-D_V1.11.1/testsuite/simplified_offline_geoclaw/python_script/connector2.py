@@ -58,12 +58,13 @@ def main():
     for i in range(1, num_ens+1):
         
         #Check if path exists and create subfolders to run individual geoclaw
-        if os.access(str(i),os.F_OK):
-            remove_file.remove(str(i))
-        os.mkdir(str(i), 0755)
+        subdir_name = "ens_"+str(i)
+        if os.access(subdir_name,os.F_OK):
+            remove_file.remove(subdir_name)
+        os.mkdir(subdir_name, 0755)
 
         #Change to subdirectory
-        os.chdir(str(i))
+        os.chdir(subdir_name)
 
         #Define pdaf input and output file names
         pdaf_input = "../ens_" + str(i) + ".txt"
