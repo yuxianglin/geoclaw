@@ -19,7 +19,8 @@ def makeinit(xv, yv, outfile):
     #z1 = np.full_like(xv, 0.0)
 
     #z2 = np.full_like(xv,-2.0)
-
+    
+    
 
     # Write output for initial data in GeoCLAW input format
     gcif.geoclaw_input_format(xv, yv, z, outfile)    

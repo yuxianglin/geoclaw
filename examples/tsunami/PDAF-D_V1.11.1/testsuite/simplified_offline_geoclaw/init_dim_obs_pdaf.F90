@@ -53,7 +53,7 @@ SUBROUTINE init_dim_obs_pdaf(step, dim_obs_p)
   ! Read observation field form file
   ALLOCATE(obs_field(ny, nx))
 
-  OPEN (12, file='inputs_offline/obs.txt', status='old')
+  OPEN (12, file='obs.txt', status='old')
   DO i = 1, ny
      READ (12, *) obs_field(i, :)
   END DO

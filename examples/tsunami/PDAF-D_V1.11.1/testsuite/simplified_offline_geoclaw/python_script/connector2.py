@@ -9,6 +9,7 @@ import make_init
 import make_init_ens
 import pdaf_to_geoclaw
 import remove_file
+import obs
 
 
 # First will try running using qinit.
@@ -40,6 +41,9 @@ def main():
     #DA parameters
     num_ens = 9
     obs_t_interval = 10
+    stddev_obs = 0.5
+    dxobs = 5;
+    dyobs = 4;
 
     x = np.linspace(xlower,xupper,nxpoints)
     y = np.linspace(yupper,ylower,nypoints)
@@ -47,6 +51,9 @@ def main():
         
     #Create main initial data file in format of the Geoclaw input
     mean_init_z = make_init.makeinit(xv, yv, geoclaw_input)
+
+    #Create observation data
+    obs.make_obs(nxpoints, nypoints, dxobs, dyobs,stddev_obs,mean_init_z)
 
     #Create ensemble members based on the mean value vector
     make_init_ens.makeinitens(mean_init_z,num_ens, "ens_")
