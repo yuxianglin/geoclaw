@@ -28,8 +28,8 @@ def main():
     Do everything
     """
     #Model Parameters
-    nxpoints = 51
-    nypoints = 51
+    nxpoints = 50
+    nypoints = 50
     xlower = -50.e0
     xupper = 50.e0
     yupper = 50.e0
@@ -39,17 +39,19 @@ def main():
     radialbowl_path = "/h2/pkjain/Desktop/Pushkar/clawpack/geoclaw/examples/tsunami/bowl-radial/"
     
     #DA parameters
-    num_ens = 9
+    num_ens = 1
     obs_t_interval = 10
     stddev_obs = 0.5
-    dxobs = 5;
-    dyobs = 4;
+    dxobs = 5
+    dyobs = 4
+    firsttime = True
 
     x = np.linspace(xlower,xupper,nxpoints)
     y = np.linspace(yupper,ylower,nypoints)
     xv,yv = np.meshgrid(x,y)
         
     #Create main initial data file in format of the Geoclaw input
+    #Create hump.xyz
     mean_init_z = make_init.makeinit(xv, yv, geoclaw_input)
 
     #Create observation data
@@ -59,9 +61,6 @@ def main():
     make_init_ens.makeinitens(mean_init_z,num_ens, "ens_")
     
     #Convert format of ensemble to data input format of Geoclaw qinit
-    firsttime = True
-
-
     for i in range(1, num_ens+1):
         
         #Check if path exists and create subfolders to run individual geoclaw
@@ -87,7 +86,10 @@ def main():
         #Copy the radial bowl test case files to every sub directory
         for files in radialbowl_files:
             shutil.copy2(os.path.join(radialbowl_path,files),os.getcwd())
-
+        
+        #---------------------------------------#
+        ########        FORECAST       ##########
+        #---------------------------------------#
         #Run Geoclaw forecast step
         subprocess.call(["make",".output"])
 
@@ -95,13 +97,15 @@ def main():
         eta = np.loadtxt("_output/fort.q00" + str(obs_t_interval), skiprows=9, usecols = [3])
         np.savetxt("../ens_"+str(i)+".txt_new", eta)
 
-        
-        
         #Go back one directory  
         os.chdir("../")
         
+        #Write new ensembles into PDAF input format
+        print np.shape(eta)
+        reshaped = np.reshape(eta,(nxpoints,nypoints))
+        np.savetxt("../ens_"+str(i)+".txt_new_reshaped",reshaped, fmt='%-7.5f')
     #Run PDAF assimilation step
-
+        
     # Run Geoclaw forecast step for all the ensemble members
 
 
