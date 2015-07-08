@@ -52,6 +52,10 @@ PROGRAM MAIN_OFFLINE
 ! Local variables
   INTEGER :: i                 ! Counter
 
+!Model Variables
+  INTEGER :: mx =  50
+  INTEGER :: my = 50
+
 
 ! **********************
 ! *** Initialize MPI ***
@@ -102,7 +106,7 @@ PROGRAM MAIN_OFFLINE
 ! *** This should only be information on the model dimension
 ! *** Generally, this could be joined with init_pdaf.
   CALL timeit(2, 'new')
-  CALL initialize()
+  CALL initialize(mx, my)
   CALL timeit(2, 'old')
 
 

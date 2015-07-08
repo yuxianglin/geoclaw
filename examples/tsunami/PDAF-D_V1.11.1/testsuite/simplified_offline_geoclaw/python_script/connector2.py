@@ -10,6 +10,7 @@ import make_init_ens
 import pdaf_to_geoclaw
 import remove_file
 import obs
+import mesh_interpol
 
 
 # First will try running using qinit.
@@ -28,8 +29,10 @@ def main():
     Do everything
     """
     #Model Parameters
-    nxpoints = 50
-    nypoints = 50
+    nxpoints = 51
+    mx = nxpoints-1
+    nypoints = 51
+    my = nypoints-1
     xlower = -50.e0
     xupper = 50.e0
     yupper = 50.e0
@@ -101,9 +104,12 @@ def main():
         os.chdir("../")
         
         #Write new ensembles into PDAF input format
-        print np.shape(eta)
-        reshaped = np.reshape(eta,(nxpoints,nypoints))
-        np.savetxt("../ens_"+str(i)+".txt_new_reshaped",reshaped, fmt='%-7.5f')
+        reshaped_eta = np.reshape(eta,(mx,my))
+        #print np.shape(eta)
+        #Interpolate eta values from cell centers to nodes. interp_eta will be of size nx*ny
+        interp_eta = mesh_interpol.interpol(reshaped_eta)
+        #print np.shape(interp_eta)
+        np.savetxt("../ens_"+str(i)+".txt_new_reshaped",interp_eta, fmt='%-7.5f')
     #Run PDAF assimilation step
         
     # Run Geoclaw forecast step for all the ensemble members
