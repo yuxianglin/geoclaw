@@ -24,5 +24,4 @@ def makeinit(xv, yv, outfile):
 
     # Write output for initial data in GeoCLAW input format
     gcif.geoclaw_input_format(xv, yv, z, outfile)    
-
     return z

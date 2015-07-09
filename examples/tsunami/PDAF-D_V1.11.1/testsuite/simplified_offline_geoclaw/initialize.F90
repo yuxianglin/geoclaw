@@ -4,7 +4,7 @@
 ! !ROUTINE: initialize  --- initialize the 2D offline example for PDAF
 !
 ! !INTERFACE:
-SUBROUTINE initialize(mx, my)
+SUBROUTINE initialize()
 
 ! !DESCRIPTION:
 ! Routine to perform initialization of the 2D offline example for
@@ -32,17 +32,19 @@ SUBROUTINE initialize(mx, my)
 !EOP
 
 ! *** Model specifications ***
-  Integer, intent(in) :: mx    ! Number of cells in x direction
-  Integer, intent(in) :: my    ! Number of cells in y direction
+!  Integer, intent(in) :: nx = 51    ! Number of nodes in x direction
+!  Integer, intent(in) :: ny = 51    ! Number of nodes in y direction
+  nx = 51    ! Number of nodes in x direction
+  ny = 51    ! Number of nodes in y direction
 
-  dim_state_p   = mx * my ! State dimension (shared via MOD_OFFLINE)
+  dim_state_p   = nx * ny ! State dimension (shared via MOD_OFFLINE)
 
 
 
 ! *** Screen output ***
   WRITE (*, '(1x, a)') 'INITIALIZE MODEL INFORMATION FOR PDAF OFFLINE MODE'
   WRITE (*, '(22x,a)') 'MODEL: 2D Offline Example for Tutorial'
-  WRITE (*, '(24x,a,i4,1x,a1,1x,i4)') 'Number of cells:',mx,'x',my
+  WRITE (*, '(24x,a,i4,1x,a1,1x,i4)') 'Number of nodes:',nx,'x',ny
   WRITE (*, '(5x, a, i7)') &
        'Global model state dimension:', dim_state_p
 

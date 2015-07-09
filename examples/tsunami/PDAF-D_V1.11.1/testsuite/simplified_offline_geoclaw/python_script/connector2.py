@@ -11,6 +11,7 @@ import pdaf_to_geoclaw
 import remove_file
 import obs
 import mesh_interpol
+import cmdir
 
 
 # First will try running using qinit.
@@ -26,7 +27,7 @@ import mesh_interpol
 
 def main():
     """
-    Do everything
+    Performs forecast and assimilation steps of geoclaw
     """
     #Model Parameters
     nxpoints = 51
@@ -42,12 +43,13 @@ def main():
     radialbowl_path = "/h2/pkjain/Desktop/Pushkar/clawpack/geoclaw/examples/tsunami/bowl-radial/"
     
     #DA parameters
-    num_ens = 1
+    num_ens = 9
     obs_t_interval = 10
     stddev_obs = 0.5
     dxobs = 5
     dyobs = 4
     firsttime = True
+    PDAF_executable = "./PDAF_offline"
 
     x = np.linspace(xlower,xupper,nxpoints)
     y = np.linspace(yupper,ylower,nypoints)
@@ -68,9 +70,7 @@ def main():
         
         #Check if path exists and create subfolders to run individual geoclaw
         subdir_name = "ens_"+str(i)
-        if os.access(subdir_name,os.F_OK):
-            remove_file.remove(subdir_name)
-        os.mkdir(subdir_name, 0755)
+        cmdir.take(subdir_name)
 
         #Change to subdirectory
         os.chdir(subdir_name)
@@ -98,10 +98,8 @@ def main():
 
         #Extract water surface elevation from geoclaw fort.q file
         eta = np.loadtxt("_output/fort.q00" + str(obs_t_interval), skiprows=9, usecols = [3])
-        np.savetxt("../ens_"+str(i)+".txt_new", eta)
+        #np.savetxt("../ens_"+str(i)+".txt_new", eta)
 
-        #Go back one directory  
-        os.chdir("../")
         
         #Write new ensembles into PDAF input format
         reshaped_eta = np.reshape(eta,(mx,my))
@@ -109,8 +107,18 @@ def main():
         #Interpolate eta values from cell centers to nodes. interp_eta will be of size nx*ny
         interp_eta = mesh_interpol.interpol(reshaped_eta)
         #print np.shape(interp_eta)
-        np.savetxt("../ens_"+str(i)+".txt_new_reshaped",interp_eta, fmt='%-7.5f')
+        
+        #Go back one directory  
+        os.chdir("../")
+        
+        np.savetxt("../ens_"+str(i)+".txt",interp_eta)
+        #np.savetxt("../ens_"+str(i)+".txt_new_reshaped",interp_eta)
+        
     #Run PDAF assimilation step
+    #-------------------------------------------#
+    ########        ASSIMILATION       ##########
+    #-------------------------------------------#
+    subprocess.call([PDAF_executable])
         
     # Run Geoclaw forecast step for all the ensemble members
 

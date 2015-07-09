@@ -18,3 +18,8 @@ _plots/
 *.xyz
 scratch/*
 !scratch/README.txt
+ens_*
+obs.txt
+state_ini.txt
+true.txt
+PDAF_offline
