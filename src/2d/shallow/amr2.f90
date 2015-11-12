@@ -94,6 +94,10 @@ program amr2
     use gauges_module, only: set_gauges, num_gauges
     use fgmax_module, only: set_fgmax, FG_num_fgrids
 
+#ifdef USE_PDAF
+  ! Add parallelization
+    CALL init_parallel_pdaf(0,1)
+#endif
     implicit none
 
     ! Local variables
