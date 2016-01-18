@@ -95,17 +95,27 @@ program amr2
     use fgmax_module, only: set_fgmax, FG_num_fgrids
 
 #ifdef USE_PDAF
-  ! Add parallelization
-    CALL init_parallel_pdaf(0,1)
+    use mod_model, only : nx,ny, field, total_steps, dtinit, time
 #endif
+
     implicit none
+
+
 
     ! Local variables
     integer :: i, iaux, mw, level
     integer :: ndim, nvar, naux, mcapa1, mindim, dimensional_split
+#ifdef USE_PDAF
+    integer :: nstart, nsteps, nv1, lentotsave, num_gauge_SAVE
+#else
     integer :: nstart, nsteps, nv1, nx, ny, lentotsave, num_gauge_SAVE
+#endif
     integer :: omp_get_max_threads, maxthreads
+#ifdef USE_PDAF
+    real(kind=8) :: ratmet, cut, dt_max
+#else
     real(kind=8) :: time, ratmet, cut, dtinit, dt_max
+#endif
     logical :: vtime, rest, output_t0    
     integer :: num_fgmax
 
@@ -125,11 +135,17 @@ program amr2
     character(len=*), parameter :: matfile = 'fort.nplot'
     character(len=*), parameter :: parmfile = 'fort.parameters'
 
+
+#ifdef USE_PDAF
+    ! Add parallelization
+    CALL init_parallel_pdaf(0,1)
+#endif
     ! Open parameter and debug files
     open(dbugunit,file=dbugfile,status='unknown',form='formatted')
     open(parmunit,file=parmfile,status='unknown',form='formatted')
 
     maxthreads = 1    !! default, if no openmp
+
 
     ! Open AMRClaw primary parameter file
     call opendatafile(inunit,clawfile)
@@ -574,13 +590,45 @@ program amr2
     endif
     close(parmunit)
 
- 
+
+#ifdef USE_PDAF
+!Allocate memory for temporary field in PDAF
+! *** Screen output ***
+    total_steps = nstop
+    WRITE (*, '(1x, a)') 'INITIALIZE 2D TUTORIAL MODEL'
+    WRITE (*, '(10x,a,i4,1x,a1,1x,i4)') 'Grid size:', nx, 'x', ny
+    WRITE (*, '(10x,a,i4)') 'Time steps', total_steps
+
+    !ALLOCATE(field(ny+2*nghost,nx+2*nghost))
+    !ALLOCATE(field(ny,nx))
+    ALLOCATE(field(nx,ny))
+   
+   ! ************************************
+   ! *** Read initial field from file ***
+   ! ************************************
+
+   OPEN(15, file = '../true_initial.txt', status='old')
+
+   DO i = 1, ny
+       READ (15, *) field(i, :)
+       PRINT *,field(i,i)
+   END DO
+
+   CLOSE(15)
+
+#endif
+
+#ifdef USE_PDAF
+     CALL init_pdaf()
+#endif
+
 
     ! --------------------------------------------------------
     !  Tick is the main routine which drives the computation:
     ! --------------------------------------------------------
     call tick(nvar,cut,nstart,vtime,time,naux,t0,rest,dt_max)
     ! --------------------------------------------------------
+
 
     ! Done with computation, cleanup:
 

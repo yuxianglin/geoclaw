@@ -11,12 +11,52 @@ c
      &                       aux_finalized, topo0work
       use gauges_module, only: setbestsrc
 
+#ifdef USE_PDAF
+      use mod_model, only: field
+#endif
 
       implicit double precision (a-h,o-z)
 
       logical vtime,dumpout/.false./,dumpchk/.false./,rest,dump_final
       dimension dtnew(maxlv), ntogo(maxlv), tlevel(maxlv)
       integer clock_start, clock_finish, clock_rate
+ 
+#ifdef USE_PDAF
+      EXTERNAL :: next_observation_pdaf, 
+     & ! Provide time step, model time and dimension of next observation
+     &            distribute_state_pdaf, 
+     & ! Routine to distribute a state vector to model fields
+     &             prepoststep_ens_pdaf,
+     & ! Routine to collect a state vector from model fields
+     &             collect_state_pdaf,
+     & ! Initialize dimension of observation vector
+     &             init_dim_obs_pdaf, 
+     & ! Implementation of observation operator
+     &             obs_op_pdaf, 
+     & ! Routine to provide vector of measurements
+     &             init_obs_pdaf,
+     & ! Add obs. error covariance R to HPH in EnKF
+     &             add_obs_error_pdaf, 
+     & ! Initialize obs error covar R in EnKF
+     &             init_obscovar_pdaf
+
+      integer i1
+      integer i_pkj
+      integer j_pkj
+      integer i2
+      integer cycle_counter
+      integer :: nsteps_pdaf
+      integer :: doexit
+      integer :: status_pdaf
+      real(kind=8) :: h_pkj, hu_pkj, hv_pkj, eta_pkj
+      !dimension q(nvar,50,50)
+      iadd(ivar,i,j)  = loc + ivar - 1 + nvar*((j-1)* mitot+i-1)
+      iaddaux(iaux,i,j) = locaux + iaux-1 + naux*(i-1) +
+     .                                      naux*mitot*(j-1)
+
+      !REAL :: timenow
+      !integer nsteps1 = 73
+#endif
 
 c
 c :::::::::::::::::::::::::::: TICK :::::::::::::::::::::::::::::
@@ -45,7 +85,6 @@ c          each step) to keep track of when that level should
 c          have its error estimated and finer levels should be regridded.
 c ::::::::::::::::::::::::::::::::::::;::::::::::::::::::::::::::
 c
-
       ncycle         = nstart
       call setbestsrc()     ! need at very start of run, including restart
       if (iout .eq. 0) then
@@ -67,6 +106,7 @@ c              # restart: make sure output times start after restart time
          endif
       endif
 
+
       nextchk = 1
       if ((nstart .gt. 0) .and. (checkpt_style.eq.2)) then
 c        if this is a restart, make sure chkpt times start after restart time
@@ -85,6 +125,80 @@ c        if this is a restart, make sure chkpt times start after restart time
        tlevel(i) = tlevel(1)
  5     continue
 
+
+#ifdef USE_PDAF
+      pdaf_modelloop: DO
+
+         call PDAF_get_state(nsteps_pdaf, timenow, doexit,
+     &         next_observation_pdaf,distribute_state_pdaf, 
+     &         prepoststep_ens_pdaf, status_pdaf)
+      
+         print *,"I am being executed"
+         print *,doexit, status_pdaf
+
+          !Check if forecast has to be performed
+          !if (time.lt.obstime .and. time + possk(1) .ge. obstime) then
+          checkforecast: if (doexit /=1 .and. status_pdaf == 0) then
+              
+              ! ***Forecast ensemble state ***
+              if (nsteps_pdaf>0) then 
+                  
+                  !Initialize current model time 
+                  print *,"Time1 = ",time
+                  time = timenow
+                  !ncycle = nsteps_pdaf
+                  ncycle = time/possk(1)
+                  tlevel(1) = time !same as 20 lines above. PDAF loop can start there
+                  do 6 i       = 2, mxnest
+                      tlevel(i) = tlevel(1)
+ 6                continue
+                   
+                  print *,"Time2 = ",time
+                  print *,"ncycle = ",ncycle
+                  cycle_counter = 0
+                  mitot   = 50 + 2*nghost
+                  mjtot   = 50 + 2*nghost
+                  loc     = node(store1, 1)
+                  locaux  = node(storeaux,1)
+                  print *,nvar, nghost, mjtot
+                  
+                  do j_pkj = nghost+1, mjtot-nghost
+                      do i_pkj = nghost+1, mitot-nghost
+                          do ivar=1,nvar
+                  if (abs(alloc(iadd(ivar,i_pkj,j_pkj))) < 1d-90) then
+                                  alloc(iadd(ivar,i_pkj,j_pkj)) = 0.d0
+                              endif
+                          enddo
+                        ! Extract depth and momenta
+                        h_pkj = alloc(iadd(1,i_pkj,j_pkj)) 
+                        hu_pkj = alloc(iadd(2,i_pkj,j_pkj))
+                        hv_pkj = alloc(iadd(3,i_pkj,j_pkj))
+                        eta_pkj = h_pkj + alloc(iaddaux(1,i_pkj,j_pkj))
+                        
+                        alloc(iadd(1,i_pkj,j_pkj)) = 
+     .                            field(i_pkj-nghost,j_pkj-nghost) 
+     .                            - alloc(iaddaux(1,i_pkj, j_pkj))
+                        !print *,field(i_pkj, j_pkj)
+                        print *,alloc(iadd(1,i_pkj, j_pkj))
+                        
+                        if (abs(eta_pkj) < 1d-90) then
+                           eta_pkj = 0.d0
+                        end if
+
+                        !print *,h_pkj, hu_pkj, hv_pkj, eta_pkj
+                     enddo
+                     print *,' '
+                  enddo
+
+                  !print *,q(1,1,1), q(2,1,1), q(3,1,1), q(15,1,1)
+
+
+                  !Advance pdaf_nsteps of forward model 
+                  !CALL integrate(time, nsteps_pdaf)
+                  !pdaf_advance_model: DO i1=1,nsteps_pdaf
+                  !print *,time
+                  !ENDDO pdaf_advance_model
+#endif
 c
 c  ------ start of coarse grid integration loop. ------------------
 c
@@ -107,6 +221,7 @@ c
       endif
 
       dumpout = .false.  !# may be reset below
+
 
       if (time.lt.outtime .and. time+1.001*possk(1) .ge. outtime) then
 c        ## adjust time step  to hit outtime exactly, and make output
@@ -333,14 +448,23 @@ c                   adjust time steps for this and finer levels
               endif
           go to 105
 c
-c  --------------one complete coarse grid integration cycle done. -----
-c
 c      time for output?  done with the whole thing?
 c
  110      continue
-          time    = time   + possk(1)
+c#ifdef USE_PDAF
+c      ENDDO pdaf_modelloop
+c#endif
+!#ifdef USE_PDAF
+!      !open(3,file = "~/Desktop/test123")
+!      write(*,*)time, ncycle, nstop
+!      !close(3)
+!#endif
+          
+
+21        time    = time   + possk(1)
           ncycle  = ncycle + 1
           call conck(1,nvar,naux,time,rest)
+
 
       if ( .not.vtime) goto 201
 
@@ -387,9 +511,72 @@ c             ! use same alg. as when setting refinement when first make new fin
          if (printout) call outtre(mstart,.true.,nvar,naux)
        endif
 
+#ifdef USE_PDAF
+          cycle_counter = cycle_counter+1
+          print *,cycle_counter
+          !if (cycle_counter==nsteps_pdaf) then
+          if (mod(ncycle,nsteps_pdaf) == 0) then
+              goto 22
+          endif
+#endif
+
       go to 20
+
+#ifdef USE_PDAF
+22            continue
+              end if
+
+                  do j_pkj = nghost+1, mjtot-nghost
+                      do i_pkj = nghost+1, mitot-nghost
+                  !        do ivar=1,nvar
+                  !if (abs(alloc(iadd(ivar,i_pkj,j_pkj))) < 1d-90) then
+                  !                alloc(iadd(ivar,i_pkj,j_pkj)) = 0.d0
+                  !            endif
+                  !        enddo
+                        ! Extract depth and momenta
+                  !      h_pkj = alloc(iadd(1,i_pkj,j_pkj)) 
+                  !      hu_pkj = alloc(iadd(2,i_pkj,j_pkj))
+                  !      hv_pkj = alloc(iadd(3,i_pkj,j_pkj))
+                  !      eta_pkj = h_pkj + alloc(iaddaux(1,i_pkj,j_pkj))
+                        
+                        field(i_pkj-nghost,j_pkj-nghost) =
+     .       alloc(iadd(1,i_pkj,j_pkj)) + alloc(iaddaux(1,i_pkj, j_pkj))
+                        !print *,field(i_pkj, j_pkj)
+                        !print *,alloc(iadd(1,i_pkj, j_pkj))
+                        
+                        !if (abs(eta_pkj) < 1d-90) then
+                        !   eta_pkj = 0.d0
+                        !end if
+
+                        !print *,h_pkj, hu_pkj, hv_pkj, eta_pkj
+                     enddo
+                     print *,' '
+                  enddo
+              ! *** PDAF: Send State forecast to filter;
+              ! *** PDAF: Perform assimilation if ensemble forecast is completed
+              ! call PDAF_put_state(....)
+              CALL PDAF_put_state_enkf(collect_state_pdaf, 
+     &             init_dim_obs_pdaf, obs_op_pdaf, init_obs_pdaf, 
+     &             prepoststep_ens_pdaf, add_obs_error_pdaf, 
+     &             init_obscovar_pdaf, status_pdaf)
+               
+              !call MPI_barrier(COMM_model, MPIERR)
+              !call finalize_pdaf()
+
+          else checkforecast
+              !No more assimilation work; exit loop
+              EXIT pdaf_modelloop
+      
+          end if checkforecast
+
+      ENDDO pdaf_modelloop
+      
+      !call finalize_pdaf()
+
+#endif
 c
 999   continue
+              
 
 c
 c  # computation is complete to final time or requested number of steps
