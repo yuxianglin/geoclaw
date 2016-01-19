@@ -611,7 +611,7 @@ program amr2
 
    DO i = 1, ny
        READ (15, *) field(i, :)
-       PRINT *,field(i,i)
+       !PRINT *,field(i,i)
    END DO
 
    CLOSE(15)

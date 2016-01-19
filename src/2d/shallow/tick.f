@@ -44,6 +44,7 @@ c
       integer i_pkj
       integer j_pkj
       integer i2
+      integer dim_counter
       integer cycle_counter
       integer :: nsteps_pdaf
       integer :: doexit
@@ -127,6 +128,7 @@ c        if this is a restart, make sure chkpt times start after restart time
 
 
 #ifdef USE_PDAF
+      dim_counter = 0
       pdaf_modelloop: DO
 
          call PDAF_get_state(nsteps_pdaf, timenow, doexit,
@@ -179,7 +181,7 @@ c        if this is a restart, make sure chkpt times start after restart time
      .                            field(i_pkj-nghost,j_pkj-nghost) 
      .                            - alloc(iaddaux(1,i_pkj, j_pkj))
                         !print *,field(i_pkj, j_pkj)
-                        print *,alloc(iadd(1,i_pkj, j_pkj))
+                        !print *,alloc(iadd(1,i_pkj, j_pkj))
                         
                         if (abs(eta_pkj) < 1d-90) then
                            eta_pkj = 0.d0
@@ -187,7 +189,7 @@ c        if this is a restart, make sure chkpt times start after restart time
 
                         !print *,h_pkj, hu_pkj, hv_pkj, eta_pkj
                      enddo
-                     print *,' '
+                     !print *,' '
                   enddo
 
                   !print *,q(1,1,1), q(2,1,1), q(3,1,1), q(15,1,1)
@@ -465,7 +467,7 @@ c#endif
           ncycle  = ncycle + 1
           call conck(1,nvar,naux,time,rest)
 
-
+#ifndef USE_PDAF
       if ( .not.vtime) goto 201
 
         ! Adjust time steps if variable time step and/or variable
@@ -510,6 +512,7 @@ c             ! use same alg. as when setting refinement when first make new fin
          call valout(1,lfine,time,nvar,naux)
          if (printout) call outtre(mstart,.true.,nvar,naux)
        endif
+#endif
 
 #ifdef USE_PDAF
           cycle_counter = cycle_counter+1
@@ -550,7 +553,7 @@ c             ! use same alg. as when setting refinement when first make new fin
 
                         !print *,h_pkj, hu_pkj, hv_pkj, eta_pkj
                      enddo
-                     print *,' '
+                     !print *,' '
                   enddo
               ! *** PDAF: Send State forecast to filter;
               ! *** PDAF: Perform assimilation if ensemble forecast is completed
@@ -559,7 +562,64 @@ c             ! use same alg. as when setting refinement when first make new fin
      &             init_dim_obs_pdaf, obs_op_pdaf, init_obs_pdaf, 
      &             prepoststep_ens_pdaf, add_obs_error_pdaf, 
      &             init_obscovar_pdaf, status_pdaf)
-               
+              
+              dim_counter = dim_counter + 1
+
+              dimcounter: if (dim_counter == 3) then
+                   !Read Analysis file and overwrite iadd(1,i,j)
+                   dim_counter = 0
+                   if ( .not.vtime) goto 201
+
+                       ! Adjust time steps if variable time step and/or variable
+                       ! refinement ratios in time
+                       if (.not. varRefTime) then
+                           ! find new dt for next cycle (passed back from integration routine).
+                           do 115 i = 2, lfine
+                               ii = lfine+1-i
+                               dtnew(ii) = min(dtnew(ii),dtnew(ii+1)*
+     &                         kratio(ii))
+ 115                       continue
+                           possk(1) = dtnew(1)
+                           do 120 i = 2, mxnest
+ 120                           possk(i) = possk(i-1) / kratio(i-1)
+                       else  ! since refinement ratio in time can change need to set new timesteps in different order
+c                          ! use same alg. as when setting refinement when first make new fine grids
+                           dtnew(1) = min(dtnew(1),dt_max)
+                           if ((num_dtopo>0).and.(topo_finalized.eqv.
+     &                     .false.)) then
+                               dtnew(1) = min(dtnew(1),dt_max_dtopo)
+                           endif
+
+                           possk(1) = dtnew(1)
+                           do 125 i = 2, lfine
+                               if (dtnew(i)  .gt. possk(i-1)) then
+                                   kratio(i-1) = 1  ! cant have larger timestep than parent level
+                                   possk(i)    = possk(i-1)
+                               else
+                                   kratio(i-1) = ceiling(possk(i-1)/
+     &                             dtnew(i))
+                                   ! round up for stable integer ratio
+                                   possk(i)    = possk(i-1)/kratio(i-1) 
+                                   ! set exact timestep on this level
+                               endif
+ 125                       continue
+
+
+                       endif
+
+ 201              if ((checkpt_style.eq.3 .and. 
+     &                 mod(ncycle,checkpt_interval).eq.0) 
+     &                 .or. dumpchk) then
+                       call check(ncycle,time,nvar,naux)
+                       dumpchk = .true.
+                   endif
+
+                   if ((mod(ncycle,iout).eq.0) .or. dumpout) then
+                       call valout(1,lfine,time,nvar,naux)
+                      if (printout) call outtre(mstart,.true.,nvar,naux)
+                   endif
+
+              endif dimcounter
               !call MPI_barrier(COMM_model, MPIERR)
               !call finalize_pdaf()
 
