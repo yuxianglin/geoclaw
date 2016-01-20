@@ -50,6 +50,7 @@ c
       integer :: doexit
       integer :: status_pdaf
       real(kind=8) :: h_pkj, hu_pkj, hv_pkj, eta_pkj
+      CHARACTER(len=2) :: ncycle_str
       !dimension q(nvar,50,50)
       iadd(ivar,i,j)  = loc + ivar - 1 + nvar*((j-1)* mitot+i-1)
       iaddaux(iaux,i,j) = locaux + iaux-1 + naux*(i-1) +
@@ -284,7 +285,7 @@ c     all aux arrays are consistent with the final topography.
 c     The variable aux_finalized is incremented so that we can check
 c     if this is true by checking if aux_finalized == 2 elsewhere in code.
 
-	  if (aux_finalized .eq. 1 .and. num_dtopo > 0) then
+      if (aux_finalized .eq. 1 .and. num_dtopo > 0) then
 c         # this is only true once, and only if there was moving topo
           deallocate(topo0work)
           endif 
@@ -453,14 +454,6 @@ c
 c      time for output?  done with the whole thing?
 c
  110      continue
-c#ifdef USE_PDAF
-c      ENDDO pdaf_modelloop
-c#endif
-!#ifdef USE_PDAF
-!      !open(3,file = "~/Desktop/test123")
-!      write(*,*)time, ncycle, nstop
-!      !close(3)
-!#endif
           
 
 21        time    = time   + possk(1)
@@ -528,6 +521,10 @@ c             ! use same alg. as when setting refinement when first make new fin
 #ifdef USE_PDAF
 22            continue
               end if
+                  
+                  ! Calculating eta after forecast step which causes
+                  ! alloc(iadd(1,i,j)) to modify.
+                  ! eta = h + topo
 
                   do j_pkj = nghost+1, mjtot-nghost
                       do i_pkj = nghost+1, mitot-nghost
@@ -557,7 +554,7 @@ c             ! use same alg. as when setting refinement when first make new fin
                   enddo
               ! *** PDAF: Send State forecast to filter;
               ! *** PDAF: Perform assimilation if ensemble forecast is completed
-              ! call PDAF_put_state(....)
+              ! field is the eta here. Check collect_state
               CALL PDAF_put_state_enkf(collect_state_pdaf, 
      &             init_dim_obs_pdaf, obs_op_pdaf, init_obs_pdaf, 
      &             prepoststep_ens_pdaf, add_obs_error_pdaf, 
@@ -565,10 +562,38 @@ c             ! use same alg. as when setting refinement when first make new fin
               
               dim_counter = dim_counter + 1
 
+              ! 3 is the number of ensemble members
+              ! This must be made generic
+              ! After assimilation step, alloc(iadd()) must contain assimilated
+              ! value for appropriate valout
+              WRITE(ncycle_str,'(i2.2)') ncycle
+              print *,'dim_counter = ',dim_counter
+              
               dimcounter: if (dim_counter == 3) then
+              dim_counter = 0
                    !Read Analysis file and overwrite iadd(1,i,j)
-                   dim_counter = 0
-                   if ( .not.vtime) goto 201
+            !OPEN(20, file = 'state_step'//TRIM(ncycle_str)//'_ana.txt', status = 'replace')
+            OPEN(20, file = 'state_step10_ana.txt', status = 'old')
+
+                   DO i_pkj = 1,ny
+                       !READ(20,*) field(i_pkj,:)
+                       READ(20,*) field(i_pkj,:)
+                       !print *, field(i_pkj,:)
+                   ENDDO
+                   !print *,field 
+                   
+                  do j_pkj = nghost+1, mjtot-nghost
+                      do i_pkj = nghost+1, mitot-nghost
+                          !READ(20,*) field(i_pkj, j_pkj)
+                          print *, field(i_pkj-nghost, j_pkj-nghost)
+                          alloc(iadd(1,i_pkj,j_pkj)) = 
+     .                            field(i_pkj-nghost,j_pkj-nghost) 
+     .                            - alloc(iaddaux(1,i_pkj, j_pkj))
+                      enddo
+                  enddo
+
+                   
+                   if ( .not.vtime) goto 202
 
                        ! Adjust time steps if variable time step and/or variable
                        ! refinement ratios in time
@@ -607,7 +632,7 @@ c                          ! use same alg. as when setting refinement when first
 
                        endif
 
- 201              if ((checkpt_style.eq.3 .and. 
+ 202              if ((checkpt_style.eq.3 .and. 
      &                 mod(ncycle,checkpt_interval).eq.0) 
      &                 .or. dumpchk) then
                        call check(ncycle,time,nvar,naux)
