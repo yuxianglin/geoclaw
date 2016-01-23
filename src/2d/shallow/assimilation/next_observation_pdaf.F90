@@ -49,7 +49,7 @@ SUBROUTINE next_observation_pdaf(stepnow, nsteps_pdaf, doexit, time)
 !EOP
 
 !Local variables
- INTEGER, SAVE :: firsttime = 1 ! Flag for initial call
+! INTEGER, SAVE :: firsttime = 1 ! Flag for initial call
 
 IF (stepnow < total_steps) THEN
    nsteps_pdaf = delt_obs

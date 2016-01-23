@@ -22,6 +22,17 @@ c
       integer clock_start, clock_finish, clock_rate
  
 #ifdef USE_PDAF
+      type ensstate
+          !character(len=50) :: title
+          !character(len=50) :: author
+          !character(len=150) :: subject
+          integer :: ens_number
+          !REAL, DIMENSION(ny,nx) :: mom_x
+          !REAL, DIMENSION(ny,nx) :: mom_y 
+          REAL, DIMENSION(50,50) :: momx
+          REAL, DIMENSION(50,50) :: momy 
+      end type ensstate
+
       EXTERNAL :: next_observation_pdaf, 
      & ! Provide time step, model time and dimension of next observation
      &            distribute_state_pdaf, 
@@ -44,14 +55,18 @@ c
       integer i_pkj
       integer j_pkj
       integer i2
-      integer dim_counter
+      integer dim_counter ! Variable to count the ensemble number. Currently it
+                          ! hardcoded to 3. In future has to be automated
       integer cycle_counter
       integer :: nsteps_pdaf
       integer :: doexit
       integer :: status_pdaf
-      real(kind=8) :: h_pkj, hu_pkj, hv_pkj, eta_pkj
+      real(kind=8) :: h_pkj, hu_pkj, hv_pkj, eta_pkj 
       CHARACTER(len=2) :: ncycle_str
-      !dimension q(nvar,50,50)
+      CHARACTER(len=20) :: assim_filestr
+      LOGICAL :: there
+      type(ensstate) :: ens_num(9)
+
       iadd(ivar,i,j)  = loc + ivar - 1 + nvar*((j-1)* mitot+i-1)
       iaddaux(iaux,i,j) = locaux + iaux-1 + naux*(i-1) +
      .                                      naux*mitot*(j-1)
@@ -130,11 +145,20 @@ c        if this is a restart, make sure chkpt times start after restart time
 
 #ifdef USE_PDAF
       dim_counter = 0
+      !Start of the model loop. This loop runs from 1:num_ens
       pdaf_modelloop: DO
 
+         ens_num(dim_counter + 1)%ens_number = dim_counter + 1
+         print *,"ens_number", ens_num(dim_counter + 1)%ens_number
+
+         ! Gets the current time (timenow) and the number of steps (nsteps_pdaf) to forecast.
+         ! next_observation - Check next_observation_pdaf.F
+         ! distribute_state_pdaf - Copy wse from state_p to field
          call PDAF_get_state(nsteps_pdaf, timenow, doexit,
      &         next_observation_pdaf,distribute_state_pdaf, 
      &         prepoststep_ens_pdaf, status_pdaf)
+
+         !print *,'field = ',field
       
          print *,"I am being executed"
          print *,doexit, status_pdaf
@@ -144,7 +168,7 @@ c        if this is a restart, make sure chkpt times start after restart time
           checkforecast: if (doexit /=1 .and. status_pdaf == 0) then
               
               ! ***Forecast ensemble state ***
-              if (nsteps_pdaf>0) then 
+              forecast_ensemble: if (nsteps_pdaf>0) then 
                   
                   !Initialize current model time 
                   print *,"Time1 = ",time
@@ -159,6 +183,10 @@ c        if this is a restart, make sure chkpt times start after restart time
                   print *,"Time2 = ",time
                   print *,"ncycle = ",ncycle
                   cycle_counter = 0
+                  
+                  ! Got from valout.F
+                  ! Modify the total height (alloc(iadd(1,i,j))) based on the field obtained from
+                  ! PDAF_get_state
                   mitot   = 50 + 2*nghost
                   mjtot   = 50 + 2*nghost
                   loc     = node(store1, 1)
@@ -173,14 +201,21 @@ c        if this is a restart, make sure chkpt times start after restart time
                               endif
                           enddo
                         ! Extract depth and momenta
-                        h_pkj = alloc(iadd(1,i_pkj,j_pkj)) 
-                        hu_pkj = alloc(iadd(2,i_pkj,j_pkj))
-                        hv_pkj = alloc(iadd(3,i_pkj,j_pkj))
-                        eta_pkj = h_pkj + alloc(iaddaux(1,i_pkj,j_pkj))
                         
                         alloc(iadd(1,i_pkj,j_pkj)) = 
      .                            field(i_pkj-nghost,j_pkj-nghost) 
      .                            - alloc(iaddaux(1,i_pkj, j_pkj))
+                        alloc(iadd(2,i_pkj, j_pkj)) = 
+     .                    ens_num(dim_counter + 1)%momx(i_pkj-nghost,
+     .                    j_pkj-nghost)
+                        alloc(iadd(3,i_pkj, j_pkj)) = 
+     .                    ens_num(dim_counter + 1)%momy(i_pkj-nghost,
+     .                    j_pkj-nghost)
+                        
+                        h_pkj = alloc(iadd(1,i_pkj,j_pkj)) 
+                        hu_pkj = alloc(iadd(2,i_pkj,j_pkj))
+                        hv_pkj = alloc(iadd(3,i_pkj,j_pkj))
+                        eta_pkj = h_pkj + alloc(iaddaux(1,i_pkj,j_pkj))
                         !print *,field(i_pkj, j_pkj)
                         !print *,alloc(iadd(1,i_pkj, j_pkj))
                         
@@ -193,14 +228,9 @@ c        if this is a restart, make sure chkpt times start after restart time
                      !print *,' '
                   enddo
 
-                  !print *,q(1,1,1), q(2,1,1), q(3,1,1), q(15,1,1)
-
 
                   !Advance pdaf_nsteps of forward model 
                   !CALL integrate(time, nsteps_pdaf)
-                  !pdaf_advance_model: DO i1=1,nsteps_pdaf
-                  !print *,time
-                  !ENDDO pdaf_advance_model
 #endif
 c
 c  ------ start of coarse grid integration loop. ------------------
@@ -519,8 +549,8 @@ c             ! use same alg. as when setting refinement when first make new fin
       go to 20
 
 #ifdef USE_PDAF
-22            continue
-              end if
+!22            continue
+22              end if forecast_ensemble
                   
                   ! Calculating eta after forecast step which causes
                   ! alloc(iadd(1,i,j)) to modify.
@@ -539,8 +569,12 @@ c             ! use same alg. as when setting refinement when first make new fin
                   !      hv_pkj = alloc(iadd(3,i_pkj,j_pkj))
                   !      eta_pkj = h_pkj + alloc(iaddaux(1,i_pkj,j_pkj))
                         
-                        field(i_pkj-nghost,j_pkj-nghost) =
+                       field(i_pkj-nghost,j_pkj-nghost) =
      .       alloc(iadd(1,i_pkj,j_pkj)) + alloc(iaddaux(1,i_pkj, j_pkj))
+                       ens_num(dim_counter + 1)%momx(i_pkj-nghost,
+     .                    j_pkj-nghost) = alloc(iadd(2,i_pkj, j_pkj))
+                       ens_num(dim_counter + 1)%momy(i_pkj-nghost,
+     .                    j_pkj-nghost) = alloc(iadd(3,i_pkj,j_pkj))
                         !print *,field(i_pkj, j_pkj)
                         !print *,alloc(iadd(1,i_pkj, j_pkj))
                         
@@ -552,6 +586,7 @@ c             ! use same alg. as when setting refinement when first make new fin
                      enddo
                      !print *,' '
                   enddo
+                  !print *,'field2 = ', field
               ! *** PDAF: Send State forecast to filter;
               ! *** PDAF: Perform assimilation if ensemble forecast is completed
               ! field is the eta here. Check collect_state
@@ -569,28 +604,37 @@ c             ! use same alg. as when setting refinement when first make new fin
               WRITE(ncycle_str,'(i2.2)') ncycle
               print *,'dim_counter = ',dim_counter
               
-              dimcounter: if (dim_counter == 3) then
-              dim_counter = 0
+              dimcounter: if (dim_counter == 9) then
+                          !dim_counter = 0
                    !Read Analysis file and overwrite iadd(1,i,j)
             !OPEN(20, file = 'state_step'//TRIM(ncycle_str)//'_ana.txt', status = 'replace')
-            OPEN(20, file = 'state_step10_ana.txt', status = 'old')
+            WRITE(assim_filestr,'(A20)') 'state_step'//ncycle_str//
+     &      '_ana.txt'
+            INQUIRE(FILE=assim_filestr, EXIST=there)
+            IF (THERE) THEN
+                PRINT *,assim_filestr,'exists'
+                OPEN(20, file = assim_filestr, status = 'old')
 
-                   DO i_pkj = 1,ny
-                       !READ(20,*) field(i_pkj,:)
-                       READ(20,*) field(i_pkj,:)
-                       !print *, field(i_pkj,:)
-                   ENDDO
-                   !print *,field 
+                DO i_pkj = 1,ny
+                    READ(20,*) field(i_pkj,:)
+                    !print *, field(i_pkj,:)
+                ENDDO
+                CLOSE(20)
+            ELSE 
+                PRINT *,"Cannot find assimilated file", assim_filestr
+                EXIT PDAF_MODELLOOP
+            ENDIF
+            print *,'field read from PDAF output = ', field 
                    
-                  do j_pkj = nghost+1, mjtot-nghost
-                      do i_pkj = nghost+1, mitot-nghost
-                          !READ(20,*) field(i_pkj, j_pkj)
-                          print *, field(i_pkj-nghost, j_pkj-nghost)
-                          alloc(iadd(1,i_pkj,j_pkj)) = 
-     .                            field(i_pkj-nghost,j_pkj-nghost) 
-     .                            - alloc(iaddaux(1,i_pkj, j_pkj))
-                      enddo
-                  enddo
+            !      do j_pkj = nghost+1, mjtot-nghost
+            !          do i_pkj = nghost+1, mitot-nghost
+            !              !READ(20,*) field(i_pkj, j_pkj)
+            !              print *, field(i_pkj-nghost, j_pkj-nghost)
+            !              alloc(iadd(1,i_pkj,j_pkj)) = 
+     .      !                      field(i_pkj-nghost,j_pkj-nghost) 
+     .      !                      - alloc(iaddaux(1,i_pkj, j_pkj))
+            !          enddo
+            !      enddo
 
                    
                    if ( .not.vtime) goto 202
@@ -645,6 +689,10 @@ c                          ! use same alg. as when setting refinement when first
                    endif
 
               endif dimcounter
+              
+              if (dim_counter == 9) then
+                  dim_counter = 0
+              endif
               !call MPI_barrier(COMM_model, MPIERR)
               !call finalize_pdaf()
 
@@ -653,6 +701,7 @@ c                          ! use same alg. as when setting refinement when first
               EXIT pdaf_modelloop
       
           end if checkforecast
+          
 
       ENDDO pdaf_modelloop
       
