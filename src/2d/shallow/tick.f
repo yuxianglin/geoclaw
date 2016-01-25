@@ -24,8 +24,7 @@ c
 #ifdef USE_PDAF
       type ensstate
           integer :: ens_number
-          REAL, DIMENSION(50,50) :: momx
-          REAL, DIMENSION(50,50) :: momy 
+          REAL(KIND=8), DIMENSION(2, 50,50) :: mom
       end type ensstate
 
       EXTERNAL :: next_observation_pdaf, 
@@ -201,10 +200,10 @@ c        if this is a restart, make sure chkpt times start after restart time
      .                            field(i_pkj-nghost,j_pkj-nghost) 
      .                            - alloc(iaddaux(1,i_pkj, j_pkj))
                         alloc(iadd(2,i_pkj, j_pkj)) = 
-     .                    ens_num(dim_counter + 1)%momx(i_pkj-nghost,
+     .                    ens_num(dim_counter + 1)%mom(1, i_pkj-nghost,
      .                    j_pkj-nghost)
                         alloc(iadd(3,i_pkj, j_pkj)) = 
-     .                    ens_num(dim_counter + 1)%momy(i_pkj-nghost,
+     .                    ens_num(dim_counter + 1)%mom(2, i_pkj-nghost,
      .                    j_pkj-nghost)
                         
                         !h_pkj = alloc(iadd(1,i_pkj,j_pkj)) 
@@ -220,7 +219,6 @@ c        if this is a restart, make sure chkpt times start after restart time
 
                         !print *,h_pkj, hu_pkj, hv_pkj, eta_pkj
                      enddo
-                     !print *,' '
                   enddo
 
 
@@ -566,9 +564,9 @@ c             ! use same alg. as when setting refinement when first make new fin
                         
                        field(i_pkj-nghost,j_pkj-nghost) =
      .       alloc(iadd(1,i_pkj,j_pkj)) + alloc(iaddaux(1,i_pkj, j_pkj))
-                       ens_num(dim_counter + 1)%momx(i_pkj-nghost,
+                       ens_num(dim_counter + 1)%mom(1, i_pkj-nghost,
      .                    j_pkj-nghost) = alloc(iadd(2,i_pkj, j_pkj))
-                       ens_num(dim_counter + 1)%momy(i_pkj-nghost,
+                       ens_num(dim_counter + 1)%mom(2, i_pkj-nghost,
      .                    j_pkj-nghost) = alloc(iadd(3,i_pkj,j_pkj))
                         !print *,field(i_pkj, j_pkj)
                         !print *,alloc(iadd(1,i_pkj, j_pkj))
@@ -592,7 +590,7 @@ c             ! use same alg. as when setting refinement when first make new fin
               
               dim_counter = dim_counter + 1
 
-              ! 3 is the number of ensemble members
+              ! 9 is the number of ensemble members
               ! This must be made generic
               ! After assimilation step, alloc(iadd()) must contain assimilated
               ! value for appropriate valout

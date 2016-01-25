@@ -60,8 +60,8 @@ SUBROUTINE distribute_state_pdaf(dim_p, state_p)
   !END DO
   !Make sure state_p has data as per geoclaw configuration: left to right
   ! and then row-wise
-  DO i = 1, nx
-     field(i,1:ny) = state_p(1 + (i-1)*nx : i*nx)
+  DO i = 1, ny
+     field(i,1:nx) = state_p(1 + (i-1)*nx : i*nx)
   END DO
   !write( *,*) "Dimension of state vector",dim_p !2500
 

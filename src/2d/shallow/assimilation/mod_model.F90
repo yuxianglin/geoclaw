@@ -22,7 +22,7 @@ MODULE mod_model
 
   INTEGER :: nx, ny               ! Size of 2D grid
   INTEGER :: total_steps          ! Total number of time steps
-  REAL, ALLOCATABLE :: field(:,:) ! Model field
+  REAL(KIND=8), ALLOCATABLE :: field(:,:) ! Model field
   REAL :: dtinit                  ! Time step size
   REAL :: time                    ! Model time
 

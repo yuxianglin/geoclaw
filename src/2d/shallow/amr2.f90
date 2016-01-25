@@ -595,13 +595,13 @@ program amr2
 !Allocate memory for temporary field in PDAF
 ! *** Screen output ***
     total_steps = nstop
-    WRITE (*, '(1x, a)') 'INITIALIZE 2D TUTORIAL MODEL'
+    WRITE (*, '(1x, a)') 'INITIALIZE GEOCLAW with PDAF'
     WRITE (*, '(10x,a,i4,1x,a1,1x,i4)') 'Grid size:', nx, 'x', ny
     WRITE (*, '(10x,a,i4)') 'Time steps', total_steps
 
     !ALLOCATE(field(ny+2*nghost,nx+2*nghost))
     !ALLOCATE(field(ny,nx))
-    ALLOCATE(field(nx,ny))
+    ALLOCATE(field(ny,nx))
    
    ! ************************************
    ! *** Read initial field from file ***
@@ -609,7 +609,7 @@ program amr2
 
    OPEN(15, file = '../true_initial.txt', status='old')
 
-   DO i = 1, ny
+   DO i = 1, nx
        READ (15, *) field(i, :)
        !PRINT *,field(i,i)
    END DO
