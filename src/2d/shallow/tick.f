@@ -23,12 +23,7 @@ c
  
 #ifdef USE_PDAF
       type ensstate
-          !character(len=50) :: title
-          !character(len=50) :: author
-          !character(len=150) :: subject
           integer :: ens_number
-          !REAL, DIMENSION(ny,nx) :: mom_x
-          !REAL, DIMENSION(ny,nx) :: mom_y 
           REAL, DIMENSION(50,50) :: momx
           REAL, DIMENSION(50,50) :: momy 
       end type ensstate
@@ -212,16 +207,16 @@ c        if this is a restart, make sure chkpt times start after restart time
      .                    ens_num(dim_counter + 1)%momy(i_pkj-nghost,
      .                    j_pkj-nghost)
                         
-                        h_pkj = alloc(iadd(1,i_pkj,j_pkj)) 
-                        hu_pkj = alloc(iadd(2,i_pkj,j_pkj))
-                        hv_pkj = alloc(iadd(3,i_pkj,j_pkj))
-                        eta_pkj = h_pkj + alloc(iaddaux(1,i_pkj,j_pkj))
+                        !h_pkj = alloc(iadd(1,i_pkj,j_pkj)) 
+                        !hu_pkj = alloc(iadd(2,i_pkj,j_pkj))
+                        !hv_pkj = alloc(iadd(3,i_pkj,j_pkj))
+                        !eta_pkj = h_pkj + alloc(iaddaux(1,i_pkj,j_pkj))
                         !print *,field(i_pkj, j_pkj)
                         !print *,alloc(iadd(1,i_pkj, j_pkj))
                         
-                        if (abs(eta_pkj) < 1d-90) then
-                           eta_pkj = 0.d0
-                        end if
+                        !if (abs(eta_pkj) < 1d-90) then
+                        !   eta_pkj = 0.d0
+                        !end if
 
                         !print *,h_pkj, hu_pkj, hv_pkj, eta_pkj
                      enddo
@@ -603,7 +598,8 @@ c             ! use same alg. as when setting refinement when first make new fin
               ! value for appropriate valout
               WRITE(ncycle_str,'(i2.2)') ncycle
               print *,'dim_counter = ',dim_counter
-              
+         
+             ! This is just for valout purpose     
               dimcounter: if (dim_counter == 9) then
                           !dim_counter = 0
                    !Read Analysis file and overwrite iadd(1,i,j)
@@ -624,17 +620,17 @@ c             ! use same alg. as when setting refinement when first make new fin
                 PRINT *,"Cannot find assimilated file", assim_filestr
                 EXIT PDAF_MODELLOOP
             ENDIF
-            print *,'field read from PDAF output = ', field 
+            !print *,'field read from PDAF output = ', field 
                    
-            !      do j_pkj = nghost+1, mjtot-nghost
-            !          do i_pkj = nghost+1, mitot-nghost
-            !              !READ(20,*) field(i_pkj, j_pkj)
-            !              print *, field(i_pkj-nghost, j_pkj-nghost)
-            !              alloc(iadd(1,i_pkj,j_pkj)) = 
-     .      !                      field(i_pkj-nghost,j_pkj-nghost) 
-     .      !                      - alloc(iaddaux(1,i_pkj, j_pkj))
-            !          enddo
-            !      enddo
+                  do j_pkj = nghost+1, mjtot-nghost
+                      do i_pkj = nghost+1, mitot-nghost
+                          !READ(20,*) field(i_pkj, j_pkj)
+                          !print *, field(i_pkj-nghost, j_pkj-nghost)
+                          alloc(iadd(1,i_pkj,j_pkj)) = 
+     .                            field(i_pkj-nghost,j_pkj-nghost) 
+     .                            - alloc(iaddaux(1,i_pkj, j_pkj))
+                      enddo
+                  enddo
 
                    
                    if ( .not.vtime) goto 202
