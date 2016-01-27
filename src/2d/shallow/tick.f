@@ -13,6 +13,7 @@ c
 
 #ifdef USE_PDAF
       use mod_model, only: field
+      use mod_assimilation, only: dim_ens, filename
 #endif
 
       implicit double precision (a-h,o-z)
@@ -51,7 +52,7 @@ c
       integer i2
       integer dim_counter ! Variable to count the ensemble number. Currently it
                           ! hardcoded to 3. In future has to be automated
-      integer cycle_counter
+      !integer cycle_counter
       integer :: nsteps_pdaf
       integer :: doexit
       integer :: status_pdaf
@@ -59,7 +60,8 @@ c
       CHARACTER(len=2) :: ncycle_str
       CHARACTER(len=20) :: assim_filestr
       LOGICAL :: there
-      type(ensstate) :: ens_num(9)
+      !INTEGER, PARAMETER :: numofens = 5
+      type(ensstate) :: ens_num(dim_ens)
 
       iadd(ivar,i,j)  = loc + ivar - 1 + nvar*((j-1)* mitot+i-1)
       iaddaux(iaux,i,j) = locaux + iaux-1 + naux*(i-1) +
@@ -139,11 +141,14 @@ c        if this is a restart, make sure chkpt times start after restart time
 
 #ifdef USE_PDAF
       dim_counter = 0
+      print *, "Number of ensemble members is ",dim_ens
+      
       !Start of the model loop. This loop runs from 1:num_ens
       pdaf_modelloop: DO
 
          ens_num(dim_counter + 1)%ens_number = dim_counter + 1
-         print *,"ens_number", ens_num(dim_counter + 1)%ens_number
+         print *,"Executing forecast of ens_number", 
+     &    ens_num(dim_counter + 1)%ens_number
 
          ! Gets the current time (timenow) and the number of steps (nsteps_pdaf) to forecast.
          ! next_observation - Check next_observation_pdaf.F
@@ -152,10 +157,19 @@ c        if this is a restart, make sure chkpt times start after restart time
      &         next_observation_pdaf,distribute_state_pdaf, 
      &         prepoststep_ens_pdaf, status_pdaf)
 
-         !print *,'field = ',field
-      
+         !--------------------------
+         !Printing the received PDAF state
+         !print *,"Just got pdaf_get_state"
+         !do i_pkj = 1,50
+         !    do  j_pkj = 1,50
+         !        print *,field(i_pkj, j_pkj)
+         !    enddo
+         !    print *,''
+         !enddo
+         !--------------------------
+
          print *,"I am being executed"
-         print *,doexit, status_pdaf
+         !print *,doexit, status_pdaf
 
           !Check if forecast has to be performed
           !if (time.lt.obstime .and. time + possk(1) .ge. obstime) then
@@ -176,7 +190,7 @@ c        if this is a restart, make sure chkpt times start after restart time
                    
                   print *,"Time2 = ",time
                   print *,"ncycle = ",ncycle
-                  cycle_counter = 0
+                  !cycle_counter = 0
                   
                   ! Got from valout.F
                   ! Modify the total height (alloc(iadd(1,i,j))) based on the field obtained from
@@ -211,7 +225,6 @@ c        if this is a restart, make sure chkpt times start after restart time
                         !hv_pkj = alloc(iadd(3,i_pkj,j_pkj))
                         !eta_pkj = h_pkj + alloc(iaddaux(1,i_pkj,j_pkj))
                         !print *,field(i_pkj, j_pkj)
-                        !print *,alloc(iadd(1,i_pkj, j_pkj))
                         
                         !if (abs(eta_pkj) < 1d-90) then
                         !   eta_pkj = 0.d0
@@ -531,8 +544,8 @@ c             ! use same alg. as when setting refinement when first make new fin
 #endif
 
 #ifdef USE_PDAF
-          cycle_counter = cycle_counter+1
-          print *,cycle_counter
+          !cycle_counter = cycle_counter+1
+          !print *,cycle_counter
           !if (cycle_counter==nsteps_pdaf) then
           if (mod(ncycle,nsteps_pdaf) == 0) then
               goto 22
@@ -549,6 +562,7 @@ c             ! use same alg. as when setting refinement when first make new fin
                   ! alloc(iadd(1,i,j)) to modify.
                   ! eta = h + topo
 
+                  print *,"forecasted field for ", dim_counter+1
                   do j_pkj = nghost+1, mjtot-nghost
                       do i_pkj = nghost+1, mitot-nghost
                   !        do ivar=1,nvar
@@ -568,8 +582,7 @@ c             ! use same alg. as when setting refinement when first make new fin
      .                    j_pkj-nghost) = alloc(iadd(2,i_pkj, j_pkj))
                        ens_num(dim_counter + 1)%mom(2, i_pkj-nghost,
      .                    j_pkj-nghost) = alloc(iadd(3,i_pkj,j_pkj))
-                        !print *,field(i_pkj, j_pkj)
-                        !print *,alloc(iadd(1,i_pkj, j_pkj))
+                        !print *,field(i_pkj-nghost, j_pkj-nghost)
                         
                         !if (abs(eta_pkj) < 1d-90) then
                         !   eta_pkj = 0.d0
@@ -597,8 +610,10 @@ c             ! use same alg. as when setting refinement when first make new fin
               WRITE(ncycle_str,'(i2.2)') ncycle
               print *,'dim_counter = ',dim_counter
          
-             ! This is just for valout purpose     
-              dimcounter: if (dim_counter == 9) then
+             !-----------------------------------
+              ! This is just for valout purpose     
+             !-----------------------------------
+              dimcounter: if (dim_counter == dim_ens) then
                           !dim_counter = 0
                    !Read Analysis file and overwrite iadd(1,i,j)
             !OPEN(20, file = 'state_step'//TRIM(ncycle_str)//'_ana.txt', status = 'replace')
@@ -606,20 +621,21 @@ c             ! use same alg. as when setting refinement when first make new fin
      &      '_ana.txt'
             INQUIRE(FILE=assim_filestr, EXIST=there)
             IF (THERE) THEN
-                PRINT *,assim_filestr,'exists'
+                PRINT *,assim_filestr,' exists'
                 OPEN(20, file = assim_filestr, status = 'old')
-
-                DO i_pkj = 1,ny
-                    READ(20,*) field(i_pkj,:)
-                    !print *, field(i_pkj,:)
+                
+                DO i_pkj = 1,50
+                    READ(20,*) field(:,i_pkj)
                 ENDDO
+                        
                 CLOSE(20)
             ELSE 
                 PRINT *,"Cannot find assimilated file", assim_filestr
                 EXIT PDAF_MODELLOOP
             ENDIF
             !print *,'field read from PDAF output = ', field 
-                   
+                
+                  print *, "Total height from assimilated field - " 
                   do j_pkj = nghost+1, mjtot-nghost
                       do i_pkj = nghost+1, mitot-nghost
                           !READ(20,*) field(i_pkj, j_pkj)
@@ -627,7 +643,9 @@ c             ! use same alg. as when setting refinement when first make new fin
                           alloc(iadd(1,i_pkj,j_pkj)) = 
      .                            field(i_pkj-nghost,j_pkj-nghost) 
      .                            - alloc(iaddaux(1,i_pkj, j_pkj))
+                          print *,alloc(iadd(1,i_pkj,j_pkj))
                       enddo
+                  print *,''
                   enddo
 
                    
@@ -684,7 +702,7 @@ c                          ! use same alg. as when setting refinement when first
 
               endif dimcounter
               
-              if (dim_counter == 9) then
+              if (dim_counter == dim_ens) then
                   dim_counter = 0
               endif
               !call MPI_barrier(COMM_model, MPIERR)
