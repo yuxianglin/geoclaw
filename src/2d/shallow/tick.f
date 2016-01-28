@@ -203,11 +203,11 @@ c        if this is a restart, make sure chkpt times start after restart time
                   
                   do j_pkj = nghost+1, mjtot-nghost
                       do i_pkj = nghost+1, mitot-nghost
-                          do ivar=1,nvar
-                  if (abs(alloc(iadd(ivar,i_pkj,j_pkj))) < 1d-90) then
-                                  alloc(iadd(ivar,i_pkj,j_pkj)) = 0.d0
-                              endif
-                          enddo
+                          !do ivar=1,nvar
+                  !if (abs(alloc(iadd(ivar,i_pkj,j_pkj))) < 1d-90) then
+                  !                alloc(iadd(ivar,i_pkj,j_pkj)) = 0.d0
+                  !            endif
+                  !        enddo
                         ! Extract depth and momenta
                         
                         alloc(iadd(1,i_pkj,j_pkj)) = 
@@ -565,7 +565,7 @@ c             ! use same alg. as when setting refinement when first make new fin
                   print *,"forecasted field for ", dim_counter+1
                   do j_pkj = nghost+1, mjtot-nghost
                       do i_pkj = nghost+1, mitot-nghost
-                  !        do ivar=1,nvar
+                          !do ivar=1,nvar
                   !if (abs(alloc(iadd(ivar,i_pkj,j_pkj))) < 1d-90) then
                   !                alloc(iadd(ivar,i_pkj,j_pkj)) = 0.d0
                   !            endif
