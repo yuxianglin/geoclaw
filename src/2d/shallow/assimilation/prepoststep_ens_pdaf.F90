@@ -183,8 +183,13 @@ SUBROUTINE prepoststep_ens_pdaf(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
 
      ! Write analysis ensemble
      DO member = 1, dim_ens
-        DO j = 1, nx
-           field(1:ny, j) = ens_p(1 + (j-1)*ny : j*ny, member)
+        !DO j = 1, nx
+        !   field(1:ny, j) = ens_p(1 + (j-1)*ny : j*ny, member)
+        !END DO
+       
+        !Modified for GEOCLAW format match 
+        DO i = 1, ny
+           field(i, 1:nx) = ens_p(1 + (i-1)*nx : i*nx, member)
         END DO
 
         WRITE (ensstr, '(i2.2)') member
@@ -199,8 +204,12 @@ SUBROUTINE prepoststep_ens_pdaf(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
      END DO
 
      ! Write analysis state
-     DO j = 1, nx
-        field(1:ny, j) = state_p(1 + (j-1)*ny : j*ny)
+     !DO j = 1, nx
+     !   field(1:ny, j) = state_p(1 + (j-1)*ny : j*ny)
+     !END DO
+     
+     DO i = 1, ny
+        field(i, 1:nx) = state_p(1 + (i-1)*nx : i*nx)
      END DO
 
      OPEN(20, file = 'state_step'//TRIM(stepstr)//'_'//TRIM(anastr)//'.txt', status = 'replace')

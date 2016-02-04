@@ -461,3 +461,23 @@ class FrictionData(clawpack.clawutil.data.ClawData):
                 self._out_file.write("'%s' %s\n " % friction_file)
 
         self.close_data_file()
+
+
+
+class PDAFData(clawpack.clawutil.data.ClawData):
+
+    def __init__(self):
+
+        super(PDAFData, self).__init__()
+
+        self.add_attribute('num_ensembles', 5)
+
+
+    def write(self, data_source="setrun.py"):
+        self.open_data_file('pdaf.data', data_source)
+
+        self.data_write("num_ensembles", description="(Number of ensembles)")
+        self.close_data_file()
+
+
+

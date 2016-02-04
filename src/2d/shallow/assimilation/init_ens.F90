@@ -81,8 +81,11 @@ SUBROUTINE init_ens(filtertype, dim_p, dim_ens, state_p, Uinv, &
      !DO j = 1, nx
      !   ens_p(1 + (j-1)*ny : j*ny, member) = field(1:ny, j)
      !END DO
-     DO j = 1, nx
-        ens_p(1 + (j-1)*ny : j*ny, member) = field(j, 1:ny)
+     !DO j = 1, nx
+     !   ens_p(1 + (j-1)*ny : j*ny, member) = field(j, 1:ny)
+     !END DO
+     DO i = 1, ny
+        ens_p(1 + (i-1)*nx : i*nx, member) = field(i, 1:nx)
      END DO
 
      CLOSE(20)

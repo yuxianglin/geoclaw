@@ -51,6 +51,13 @@ def qinit(x,y):
     z = where(ze>-10., 40.e0*exp(ze), 0.)
     return z
 
+def makeinit_planewave(x,y):
+    k = 5*pi/100.0
+    z = 0.8*sin(k * (x+10.0))
+    #return np.transpose(z)
+    return z
+
 if __name__=='__main__':
     maketopo()
     makeqinit()
+    topotools.topo1writer("planewave.xyz",makeinit_planewave, -98.0, 98.0, -98.0, 98.0, 50,50)

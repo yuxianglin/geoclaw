@@ -368,7 +368,16 @@ c
           call system_clock(clock_finish,clock_rate)
           timeRegridding = timeRegridding + clock_finish - clock_start
 
+#ifdef USE_PDAF
+          if (dim_counter == 0) then
+              print *,"hello123"
+              call setbestsrc()     ! need at every grid change
+          endif
+#endif
+
+#ifndef USE_PDAF
           call setbestsrc()     ! need at every grid change
+#endif
 c         call conck(1,nvar,naux,time,rest)
 c         call outtre(lstart(lbase+1),.true.,nvar,naux)
 c note negative time to signal regridding output in plots
@@ -376,10 +385,21 @@ c         call valout(lbase,lfine,-tlevel(lbase),nvar,naux)
 c
 c  maybe finest level in existence has changed. reset counters.
 c
+#ifdef USE_PDAF
+          if(dim_counter == 0) then
           if (rprint .and. lbase .lt. lfine) then
              call outtre(lstart(lbase+1),.false.,nvar,naux)
           endif
- 70       continue
+          endif
+#endif
+
+#ifndef USE_PDAF
+          if (rprint .and. lbase .lt. lfine) then
+             call outtre(lstart(lbase+1),.false.,nvar,naux)
+          endif
+#endif
+
+70       continue
           do 80  i  = lbase, lfine
  80          icheck(i) = 0
           do 81  i  = lbase+1, lfine

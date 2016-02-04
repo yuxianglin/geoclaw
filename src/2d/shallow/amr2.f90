@@ -622,7 +622,6 @@ program amr2
      CALL init_pdaf()
 #endif
 
-
     ! --------------------------------------------------------
     !  Tick is the main routine which drives the computation:
     ! --------------------------------------------------------

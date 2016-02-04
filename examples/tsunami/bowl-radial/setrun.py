@@ -331,6 +331,10 @@ def setrun(claw_pkg='geoclaw'):
         x = r + .001  # shift a bit away from cell corners
         y = .001
         rundata.gaugedata.gauges.append([gaugeno, x, y, 0., 1e10])
+    
+    #Gauge set by PKJ
+    gaugeno = 12
+    rundata.gaugedata.gauges.append([gaugeno, 0.0, 0.0, 0, 1e10])
 
     # gauges along diagonal:
     gaugeno = 100
@@ -400,6 +404,7 @@ def setgeo(rundata):
     # for qinit perturbations, append lines of the form: (<= 1 allowed for now!)
     #   [minlev, maxlev, fname]
     rundata.qinit_data.qinitfiles.append([1, 2, 'hump.xyz'])
+    #rundata.qinit_data.qinitfiles.append([1, 2, 'planewave.xyz'])
 
     # == setfixedgrids.data values ==
     fixedgrids = rundata.fixed_grid_data.fixedgrids
@@ -411,11 +416,16 @@ def setgeo(rundata):
     # end of function setgeo
     # ----------------------
 
-
+def set_PDAF(rundata):
+    import clawpack.geoclaw.data
+    rundata.add_data(clawpack.geoclaw.data.PDAFData(), 'pdaf_data')
+    rundata.pdaf_data.num_ensembles = 9
+    return rundata
 
 if __name__ == '__main__':
     # Set up run-time parameters and write all data files.
     import sys
     rundata = setrun(*sys.argv[1:])
+    rundata = set_PDAF(rundata)
     rundata.write()
 

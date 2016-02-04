@@ -49,6 +49,8 @@ SUBROUTINE init_pdaf()
   INTEGER :: status_pdaf       ! PDAF status flag
   !INTEGER :: doexit, steps     
   !REAL    :: timenow           
+  CHARACTER(len=9) :: filename_pdaf = 'pdaf.data'
+  LOGICAL :: there
 
   ! External subroutines
   EXTERNAL :: init_ens         ! Ensemble initialization
@@ -94,7 +96,14 @@ SUBROUTINE init_pdaf()
                     !   (5) LETKF
                     !   (6) ESTKF
                     !   (7) LESTKF
-  dim_ens = 5       ! Size of ensemble for all ensemble filters
+
+   inquire(FILE=filename_pdaf, EXIST=there)
+   if (there) then
+      call opendatafile(22, filename_pdaf)
+   endif
+   read(22, "(i2)") dim_ens   ! Size of ensemble for all ensemble filters
+   close(22)
+
                     ! Number of EOFs to be used for SEEK
   subtype = 0       ! subtype of filter: 
                     !   ESTKF:
