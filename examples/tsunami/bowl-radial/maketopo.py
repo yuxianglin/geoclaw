@@ -25,10 +25,10 @@ def makeqinit():
     """
     nxpoints = 51
     nypoints = 51
-    xlower = -50.e0
-    xupper = 50.e0
-    yupper = 50.e0
-    ylower = -50.e0
+    xlower = -100.e0
+    xupper = 100.e0
+    yupper = 100.e0
+    ylower = -100.e0
     outfile= "hump.xyz"     
     topotools.topo1writer(outfile,qinit,xlower,xupper,ylower,yupper,nxpoints,nypoints)
 
@@ -60,4 +60,4 @@ def makeinit_planewave(x,y):
 if __name__=='__main__':
     maketopo()
     makeqinit()
-    topotools.topo1writer("planewave.xyz",makeinit_planewave, -98.0, 98.0, -98.0, 98.0, 50,50)
+    topotools.topo1writer("planewave.xyz",makeinit_planewave, -100.0, 100.0, -100.0, 100.0, 50,50)

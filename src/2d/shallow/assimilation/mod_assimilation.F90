@@ -140,7 +140,7 @@ MODULE mod_assimilation
                            ! of P has also to be specified in PDAF_filter_init.
                            ! Only for upward-compatibility of PDAF!
   REAL    :: time          ! model time
-  REAL    :: dum_ncycle    ! Cycle number
+!  REAL    :: dum_ncycle    ! Cycle number
   LOGICAL :: have_obs      ! Flag whether we consider observations
 
 END MODULE mod_assimilation

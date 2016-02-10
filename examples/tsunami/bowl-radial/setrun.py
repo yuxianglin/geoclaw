@@ -61,6 +61,11 @@ def setrun(claw_pkg='geoclaw'):
 
     clawdata.lower[1] = -100.0
     clawdata.upper[1] = 100.0
+    #clawdata.lower[0] = -98.0
+    #clawdata.upper[0] = 98.0
+
+    #clawdata.lower[1] = -98.0
+    #clawdata.upper[1] = 98.0
 
 
 
@@ -419,7 +424,7 @@ def setgeo(rundata):
 def set_PDAF(rundata):
     import clawpack.geoclaw.data
     rundata.add_data(clawpack.geoclaw.data.PDAFData(), 'pdaf_data')
-    rundata.pdaf_data.num_ensembles = 9
+    rundata.pdaf_data.num_ensembles = 1
     return rundata
 
 if __name__ == '__main__':

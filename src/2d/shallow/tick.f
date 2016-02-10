@@ -25,7 +25,7 @@ c
 #ifdef USE_PDAF
       type ensstate
           integer :: ens_number
-          REAL(KIND=8), DIMENSION(2, 50,50) :: mom
+          REAL(KIND=8), DIMENSION(2, 50,50) :: mom = 0.0d0
       end type ensstate
 
       EXTERNAL :: next_observation_pdaf, 
@@ -69,6 +69,12 @@ c
 
       !REAL :: timenow
       !integer nsteps1 = 73
+#endif
+#ifndef USE_PDAF
+      REAL(KIND=8), DIMENSION(50,50) :: field = 0.0d0
+      iadd(ivar,i,j)  = loc + ivar - 1 + nvar*((j-1)* mitot+i-1)
+      iaddaux(iaux,i,j) = locaux + iaux-1 + naux*(i-1) +
+     .                                      naux*mitot*(j-1)
 #endif
 
 c
@@ -138,9 +144,66 @@ c        if this is a restart, make sure chkpt times start after restart time
        tlevel(i) = tlevel(1)
  5     continue
 
+#ifndef USE_PDAF
+                  mitot   = 50 + 2*nghost
+                  mjtot   = 50 + 2*nghost
+                  loc     = node(store1, 1)
+                  locaux  = node(storeaux,1)
+                OPEN(24,file="../inputs_online/ens_1.txt", STATUS="old")
+                !From left to right. Bsically from 1 to nx
+                  DO i_pkj = 1,50
+                      !READ(24,*) field(i_pkj,:)
+                      READ(24,*) field(:,i_pkj)
+                  ENDDO
+                  CLOSE(24)
+                  do j_pkj = nghost+1, mjtot-nghost
+                      do i_pkj = nghost+1, mitot-nghost
+                  !        do ivar=1,nvar
+                  !if (abs(alloc(iadd(ivar,i_pkj,j_pkj))) < 1d-90) then
+                  !                alloc(iadd(ivar,i_pkj,j_pkj)) = 0.d0
+                  !            endif
+                  !        enddo
+                        ! Extract depth and momenta
+                        
+                        alloc(iadd(1,i_pkj,j_pkj)) = 
+     .                            field(i_pkj-nghost,j_pkj-nghost) 
+     .                            - alloc(iaddaux(1,i_pkj, j_pkj))
+                        alloc(iadd(2,i_pkj, j_pkj)) = 0.d0
+                        alloc(iadd(3,i_pkj, j_pkj)) = 0.d0
+                        
+                        if (alloc(iadd(1,i_pkj,j_pkj)) < 0.d0) then
+                                alloc(iadd(1,i_pkj,j_pkj)) = 0.d0
+                        endif
+                  !        do ivar=1,nvar
+                  !if (abs(alloc(iadd(ivar,i_pkj,j_pkj))) < 1d-90) then
+                  !                alloc(iadd(ivar,i_pkj,j_pkj)) = 0.d0
+                  !            endif
+                  !        enddo
+                        !h_pkj = alloc(iadd(1,i_pkj,j_pkj)) 
+                        !hu_pkj = alloc(iadd(2,i_pkj,j_pkj))
+                        !hv_pkj = alloc(iadd(3,i_pkj,j_pkj))
+                        !eta_pkj = h_pkj + alloc(iaddaux(1,i_pkj,j_pkj))
+                        !print *,field(i_pkj, j_pkj)
+                        
+                        !if (abs(eta_pkj) < 1d-90) then
+                        !   eta_pkj = 0.d0
+                        !end if
+
+                        !print *,h_pkj, hu_pkj, hv_pkj, eta_pkj
+               !         print *,alloc(iadd(1,i_pkj,j_pkj)), 
+     .         !                 alloc(iadd(2,i_pkj,j_pkj)),
+     .         !                 alloc(iadd(3,i_pkj,j_pkj)),  
+     .         !                 alloc(iaddaux(1,i_pkj,j_pkj))
+                     enddo
+                  enddo
+
+#endif
 
 #ifdef USE_PDAF
       dim_counter = 0
+      !DO i_pkj=1,dim_ens
+      !    ens_num(i_pkj)%mom(:,:,:) = 0.0d0
+      !enddo
       print *, "Number of ensemble members is ",dim_ens
       
       !Start of the model loop. This loop runs from 1:num_ens
@@ -203,7 +266,7 @@ c        if this is a restart, make sure chkpt times start after restart time
                   
                   do j_pkj = nghost+1, mjtot-nghost
                       do i_pkj = nghost+1, mitot-nghost
-                          !do ivar=1,nvar
+                  !        do ivar=1,nvar
                   !if (abs(alloc(iadd(ivar,i_pkj,j_pkj))) < 1d-90) then
                   !                alloc(iadd(ivar,i_pkj,j_pkj)) = 0.d0
                   !            endif
@@ -220,6 +283,14 @@ c        if this is a restart, make sure chkpt times start after restart time
      .                    ens_num(dim_counter + 1)%mom(2, i_pkj-nghost,
      .                    j_pkj-nghost)
                         
+                        !if (alloc(iadd(1,i_pkj,j_pkj)) < 0.d0) then
+                        !        alloc(iadd(1,i_pkj,j_pkj)) = 0.d0
+                        !endif
+                  !        do ivar=1,nvar
+                  !if (abs(alloc(iadd(ivar,i_pkj,j_pkj))) < 1d-90) then
+                  !                alloc(iadd(ivar,i_pkj,j_pkj)) = 0.d0
+                  !            endif
+                  !        enddo
                         !h_pkj = alloc(iadd(1,i_pkj,j_pkj)) 
                         !hu_pkj = alloc(iadd(2,i_pkj,j_pkj))
                         !hv_pkj = alloc(iadd(3,i_pkj,j_pkj))
@@ -231,6 +302,10 @@ c        if this is a restart, make sure chkpt times start after restart time
                         !end if
 
                         !print *,h_pkj, hu_pkj, hv_pkj, eta_pkj
+                        !print *,alloc(iadd(1,i_pkj,j_pkj)), 
+     .                  !        alloc(iadd(2,i_pkj,j_pkj)),
+     .                  !        alloc(iadd(3,i_pkj,j_pkj)),  
+     .                  !        alloc(iaddaux(1,i_pkj,j_pkj))
                      enddo
                   enddo
 
@@ -329,7 +404,20 @@ c         # this is only true once, and only if there was moving topo
           aux_finalized = aux_finalized + 1
           endif
 
-    
+!#ifndef USE_PDAF 
+!                  mitot   = 50 + 2*nghost
+!                  mjtot   = 50 + 2*nghost
+!                  loc     = node(store1, 1)
+!                  locaux  = node(storeaux,1)
+!                  do j_pkj = nghost+1, mjtot-nghost
+!                      do i_pkj = nghost+1, mitot-nghost
+!                        print *,alloc(iadd(1,i_pkj,j_pkj)), 
+!     .                          alloc(iadd(2,i_pkj,j_pkj)),
+!     .                          alloc(iadd(3,i_pkj,j_pkj)),  
+!     .                          alloc(iaddaux(1,i_pkj,j_pkj))
+!                      enddo
+!                  enddo
+!#endif     
 c
 c     ------------- regridding  time?  ---------
 c
@@ -368,12 +456,12 @@ c
           call system_clock(clock_finish,clock_rate)
           timeRegridding = timeRegridding + clock_finish - clock_start
 
-#ifdef USE_PDAF
-          if (dim_counter == 0) then
-              print *,"hello123"
-              call setbestsrc()     ! need at every grid change
-          endif
-#endif
+!#ifdef USE_PDAF
+!          if (dim_counter == 0) then
+!              print *,"hello123"
+!              call setbestsrc()     ! need at every grid change
+!          endif
+!#endif
 
 #ifndef USE_PDAF
           call setbestsrc()     ! need at every grid change
@@ -385,13 +473,13 @@ c         call valout(lbase,lfine,-tlevel(lbase),nvar,naux)
 c
 c  maybe finest level in existence has changed. reset counters.
 c
-#ifdef USE_PDAF
-          if(dim_counter == 0) then
-          if (rprint .and. lbase .lt. lfine) then
-             call outtre(lstart(lbase+1),.false.,nvar,naux)
-          endif
-          endif
-#endif
+!#ifdef USE_PDAF
+!          if(dim_counter == 0) then
+!          if (rprint .and. lbase .lt. lfine) then
+!             call outtre(lstart(lbase+1),.false.,nvar,naux)
+!          endif
+!          endif
+!#endif
 
 #ifndef USE_PDAF
           if (rprint .and. lbase .lt. lfine) then
@@ -588,8 +676,8 @@ c             ! use same alg. as when setting refinement when first make new fin
                           !do ivar=1,nvar
                   !if (abs(alloc(iadd(ivar,i_pkj,j_pkj))) < 1d-90) then
                   !                alloc(iadd(ivar,i_pkj,j_pkj)) = 0.d0
-                  !            endif
-                  !        enddo
+                  !           endif
+                  !       enddo
                         ! Extract depth and momenta
                   !      h_pkj = alloc(iadd(1,i_pkj,j_pkj)) 
                   !      hu_pkj = alloc(iadd(2,i_pkj,j_pkj))
@@ -623,8 +711,6 @@ c             ! use same alg. as when setting refinement when first make new fin
               
               dim_counter = dim_counter + 1
 
-              ! 9 is the number of ensemble members
-              ! This must be made generic
               ! After assimilation step, alloc(iadd()) must contain assimilated
               ! value for appropriate valout
               WRITE(ncycle_str,'(i2.2)') ncycle
@@ -655,7 +741,6 @@ c             ! use same alg. as when setting refinement when first make new fin
             ENDIF
             !print *,'field read from PDAF output = ', field 
                 
-                  print *, "Total height from assimilated field - " 
                   do j_pkj = nghost+1, mjtot-nghost
                       do i_pkj = nghost+1, mitot-nghost
                           !READ(20,*) field(i_pkj, j_pkj)
@@ -663,11 +748,11 @@ c             ! use same alg. as when setting refinement when first make new fin
                           alloc(iadd(1,i_pkj,j_pkj)) = 
      .                            field(i_pkj-nghost,j_pkj-nghost) 
      .                            - alloc(iaddaux(1,i_pkj, j_pkj))
-                          print *,alloc(iadd(1,i_pkj,j_pkj))
+                          !print *,alloc(iadd(1,i_pkj,j_pkj))
                       enddo
-                  print *,''
+                  !print *,''
                   enddo
-
+                          
                    
                    if ( .not.vtime) goto 202
 
