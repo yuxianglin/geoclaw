@@ -173,7 +173,7 @@ c        if this is a restart, make sure chkpt times start after restart time
                   print *, "nx = ",nx
                   print *, "ny = ",ny
 
-                OPEN(24,file="../inputs_online/ens_1.txt", STATUS="old")
+                OPEN(24,file="../ens_1.txt", STATUS="old")
                 !From left to right. Bsically from 1 to nx
 !                  DO i_pkj = 1,nx
                   DO i_pkj = 1,nx1

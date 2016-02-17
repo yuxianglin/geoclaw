@@ -72,8 +72,8 @@ SUBROUTINE init_ens(filtertype, dim_p, dim_ens, state_p, Uinv, &
 ! ********************************
 
   DO member = 1, dim_ens
-     WRITE (ensstr, '(i1)') member
-     OPEN(20, file = '../ens_'//TRIM(ensstr)//'.txt', status='old')
+     WRITE (ensstr, '(i2)') member
+     OPEN(20, file = '../ens_'//TRIM(ADJUSTL(ensstr))//'.txt', status='old')
  
      DO i = 1, ny
         READ (20, *) field(i, :)

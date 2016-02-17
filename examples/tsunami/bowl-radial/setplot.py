@@ -72,8 +72,8 @@ def setplot(plotdata):
     #plotitem.pcolor_cmin = -5.
     #plotitem.pcolor_cmax = 5.0
     #Planewave
-    plotitem.pcolor_cmin = -2.0
-    plotitem.pcolor_cmax = 2.0
+    plotitem.pcolor_cmin = -.25
+    plotitem.pcolor_cmax = 0.25
     plotitem.add_colorbar = True
     plotitem.amr_celledges_show = [1,1,0]
     plotitem.amr_patchedges_show = [1]
