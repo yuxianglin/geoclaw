@@ -77,15 +77,11 @@ SUBROUTINE init_pdaf()
 ! **********************************************************
 
 ! *** Forecast length (time interval between analysis steps) ***
-  delt_obs = 10     ! Number of time steps between analysis/assimilation steps
+  !delt_obs = 20     ! Number of time steps between analysis/assimilation steps
 
 ! *** IO options ***
   screen      = 2  ! Write screen output (1) for output, (2) add timings
 
-! *** specifications for observations ***
-  ! avg. observation error (used for assimilation)
-  rms_obs = 0.01    ! This error is the standard deviation 
-                   ! for the Gaussian distribution 
 
 ! *** Filter specific variables
   filtertype = 2    ! Type of filter
@@ -101,6 +97,14 @@ SUBROUTINE init_pdaf()
    if (there) then
       call opendatafile(22, filename_pdaf)
    endif
+! *** Forecast length (time interval between analysis steps) ***
+   read(22, "(i2)") delt_obs   ! Number of time steps between analysis/assimilation steps
+
+! *** specifications for observations ***
+  ! avg. observation error (used for assimilation)
+   read(22,*) rms_obs     ! This error is the standard deviation 
+                   ! for the Gaussian distribution 
+
    read(22, "(i2)") dim_ens   ! Size of ensemble for all ensemble filters
    close(22)
 

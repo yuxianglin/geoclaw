@@ -607,14 +607,14 @@ program amr2
    ! *** Read initial field from file ***
    ! ************************************
 
-   OPEN(15, file = '../true_initial.txt', status='old')
+   !OPEN(15, file = '../true_initial.txt', status='old')
 
-   DO i = 1, nx
-       READ (15, *) field(i, :)
-       !PRINT *,field(i,i)
-   END DO
+   !DO i = 1, nx
+   !    READ (15, *) field(i, :)
+   !    !PRINT *,field(i,i)
+   !END DO
 
-   CLOSE(15)
+   !CLOSE(15)
 
 #endif
 

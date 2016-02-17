@@ -46,7 +46,7 @@ SUBROUTINE init_dim_obs_pdaf(step, dim_obs_p)
   INTEGER :: i, j                     ! Counters
   INTEGER :: cnt, cnt0                ! Counters
   REAL, ALLOCATABLE :: obs_field(:,:) ! Array for observation field read from file
-  CHARACTER(len=2) :: stepstr         ! String for time step
+  CHARACTER(len=3) :: stepstr         ! String for time step
 
 
 ! ****************************************
@@ -56,13 +56,14 @@ SUBROUTINE init_dim_obs_pdaf(step, dim_obs_p)
   ! Read observation field form file
   ALLOCATE(obs_field(ny, nx))
 
-  IF (step<10) THEN
-     WRITE (stepstr, '(i1)') step
-  ELSE
-     WRITE (stepstr, '(i2)') step
-  END IF
+!  IF (step<10) THEN
+!     WRITE (stepstr, '(i1)') step
+!  ELSE
+!     WRITE (stepstr, '(i2)') step
+!  END IF
+     WRITE (stepstr, '(i3)') step
 
-  OPEN (12, file='../inputs_online/obs_step'//TRIM(stepstr)//'.txt', status='old')
+  OPEN (12, file='../inputs_online/obs_step'//TRIM(ADJUSTL(stepstr))//'.txt', status='old')
   DO i = 1, ny
      READ (12, *) obs_field(i, :)
   END DO

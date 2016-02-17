@@ -61,11 +61,6 @@ def setrun(claw_pkg='geoclaw'):
 
     clawdata.lower[1] = -100.0
     clawdata.upper[1] = 100.0
-    #clawdata.lower[0] = -98.0
-    #clawdata.upper[0] = 98.0
-
-    #clawdata.lower[1] = -98.0
-    #clawdata.upper[1] = 98.0
 
 
 
@@ -129,8 +124,10 @@ def setrun(claw_pkg='geoclaw'):
 
     elif clawdata.output_style == 3:
         # Output every iout timesteps with a total of ntot time steps:
-        clawdata.output_step_interval = 10
-        clawdata.total_steps = 50
+        #clawdata.output_step_interval = 10
+        #clawdata.total_steps = 50
+        clawdata.output_step_interval = 40
+        clawdata.total_steps = 200
         clawdata.output_t0 = True
         
 
@@ -424,7 +421,9 @@ def setgeo(rundata):
 def set_PDAF(rundata):
     import clawpack.geoclaw.data
     rundata.add_data(clawpack.geoclaw.data.PDAFData(), 'pdaf_data')
-    rundata.pdaf_data.num_ensembles = 1
+    rundata.pdaf_data.num_ensembles = 9
+    rundata.pdaf_data.rms_obs = 0.1
+    rundata.pdaf_data.delt_obs = 40
     return rundata
 
 if __name__ == '__main__':

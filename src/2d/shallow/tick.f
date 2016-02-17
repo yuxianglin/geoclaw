@@ -23,10 +23,10 @@ c
       integer clock_start, clock_finish, clock_rate
  
 #ifdef USE_PDAF
-      type ensstate
-          integer :: ens_number
-          REAL(KIND=8), DIMENSION(2, 50,50) :: mom = 0.0d0
-      end type ensstate
+      !type ensstate
+      !    integer :: ens_number
+      !    REAL(KIND=8), DIMENSION(2, nx1, ny1) :: mom = 0.0d0
+      !end type ensstate
 
       EXTERNAL :: next_observation_pdaf, 
      & ! Provide time step, model time and dimension of next observation
@@ -46,6 +46,8 @@ c
      & ! Initialize obs error covar R in EnKF
      &             init_obscovar_pdaf
 
+      integer,PARAMETER :: nx1 = 50
+      integer, PARAMETER :: ny1 = 50
       integer i1
       integer i_pkj
       integer j_pkj
@@ -61,7 +63,7 @@ c
       CHARACTER(len=20) :: assim_filestr
       LOGICAL :: there
       !INTEGER, PARAMETER :: numofens = 5
-      type(ensstate) :: ens_num(dim_ens)
+      integer :: input_counter
 
       iadd(ivar,i,j)  = loc + ivar - 1 + nvar*((j-1)* mitot+i-1)
       iaddaux(iaux,i,j) = locaux + iaux-1 + naux*(i-1) +
@@ -69,9 +71,16 @@ c
 
       !REAL :: timenow
       !integer nsteps1 = 73
+      type ensstate
+          integer :: ens_number
+          REAL(KIND=8), DIMENSION(2, nx1, ny1) :: mom = 0.0d0
+      end type ensstate
+      type(ensstate) :: ens_num(dim_ens)
 #endif
 #ifndef USE_PDAF
-      REAL(KIND=8), DIMENSION(50,50) :: field = 0.0d0
+      integer,PARAMETER :: nx1 = 50
+      integer, PARAMETER :: ny1 = 50
+      REAL(KIND=8), DIMENSION(nx1,ny1) :: field = 0.0d0
       iadd(ivar,i,j)  = loc + ivar - 1 + nvar*((j-1)* mitot+i-1)
       iaddaux(iaux,i,j) = locaux + iaux-1 + naux*(i-1) +
      .                                      naux*mitot*(j-1)
@@ -145,13 +154,29 @@ c        if this is a restart, make sure chkpt times start after restart time
  5     continue
 
 #ifndef USE_PDAF
-                  mitot   = 50 + 2*nghost
-                  mjtot   = 50 + 2*nghost
+!         input_counter = 0
+!         level = 1
+!         lend = lfine
+!         ngrids=0
+! 65      if (level .gt. lend) go to 91
+!         mptr = lstart(level)
+! 71      if (mptr .eq. 0) go to 82
+!                  input_counter = input_counter + 1
+!                  print *,"input_counter = ", input_counter
+!                  ngrids = ngrids + 1
+!                  nx = node(ndihi,mptr) - node(ndilo, mptr) + 1
+!                  ny = node(ndjhi,mptr) - node(ndjlo, mptr) + 1
                   loc     = node(store1, 1)
                   locaux  = node(storeaux,1)
+                  mitot   = nx1 + 2*nghost
+                  mjtot   = ny1 + 2*nghost
+                  print *, "nx = ",nx
+                  print *, "ny = ",ny
+
                 OPEN(24,file="../inputs_online/ens_1.txt", STATUS="old")
                 !From left to right. Bsically from 1 to nx
-                  DO i_pkj = 1,50
+!                  DO i_pkj = 1,nx
+                  DO i_pkj = 1,nx1
                       !READ(24,*) field(i_pkj,:)
                       READ(24,*) field(:,i_pkj)
                   ENDDO
@@ -171,9 +196,10 @@ c        if this is a restart, make sure chkpt times start after restart time
                         alloc(iadd(2,i_pkj, j_pkj)) = 0.d0
                         alloc(iadd(3,i_pkj, j_pkj)) = 0.d0
                         
-                        if (alloc(iadd(1,i_pkj,j_pkj)) < 0.d0) then
-                                alloc(iadd(1,i_pkj,j_pkj)) = 0.d0
-                        endif
+                  !      if (alloc(iadd(1,i_pkj,j_pkj)) < 0.d0) then
+                  !              alloc(iadd(1,i_pkj,j_pkj)) = 0.d0
+                  !      endif
+                  
                   !        do ivar=1,nvar
                   !if (abs(alloc(iadd(ivar,i_pkj,j_pkj))) < 1d-90) then
                   !                alloc(iadd(ivar,i_pkj,j_pkj)) = 0.d0
@@ -196,6 +222,11 @@ c        if this is a restart, make sure chkpt times start after restart time
      .         !                 alloc(iaddaux(1,i_pkj,j_pkj))
                      enddo
                   enddo
+!             mptr = node(levelptr, mptr)
+!             go to 71
+! 82         level = level +1
+!             go to 65
+! 91          continue 
 
 #endif
 
@@ -258,8 +289,8 @@ c        if this is a restart, make sure chkpt times start after restart time
                   ! Got from valout.F
                   ! Modify the total height (alloc(iadd(1,i,j))) based on the field obtained from
                   ! PDAF_get_state
-                  mitot   = 50 + 2*nghost
-                  mjtot   = 50 + 2*nghost
+                  mitot   = nx1 + 2*nghost
+                  mjtot   = ny1 + 2*nghost
                   loc     = node(store1, 1)
                   locaux  = node(storeaux,1)
                   print *,nvar, nghost, mjtot
@@ -730,7 +761,7 @@ c             ! use same alg. as when setting refinement when first make new fin
                 PRINT *,assim_filestr,' exists'
                 OPEN(20, file = assim_filestr, status = 'old')
                 
-                DO i_pkj = 1,50
+                DO i_pkj = 1,ny1
                     READ(20,*) field(:,i_pkj)
                 ENDDO
                         
