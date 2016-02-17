@@ -63,7 +63,7 @@ SUBROUTINE init_dim_obs_pdaf(step, dim_obs_p)
 !  END IF
      WRITE (stepstr, '(i3)') step
 
-  OPEN (12, file='../inputs_online/obs_step'//TRIM(ADJUSTL(stepstr))//'.txt', status='old')
+  OPEN (12, file='../obs_step'//TRIM(ADJUSTL(stepstr))//'.txt', status='old')
   DO i = 1, ny
      READ (12, *) obs_field(i, :)
   END DO
