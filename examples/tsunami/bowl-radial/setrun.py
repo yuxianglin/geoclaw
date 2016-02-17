@@ -38,6 +38,11 @@ def setrun(claw_pkg='geoclaw'):
     rundata = setgeo(rundata)
 
     #------------------------------------------------------------------
+    # PDAF specific parameters:
+    #------------------------------------------------------------------
+    rundata = set_PDAF(rundata)
+    
+    #------------------------------------------------------------------
     # Standard Clawpack parameters to be written to claw.data:
     #   (or to amr2ez.data for AMR)
     #------------------------------------------------------------------
@@ -430,6 +435,6 @@ if __name__ == '__main__':
     # Set up run-time parameters and write all data files.
     import sys
     rundata = setrun(*sys.argv[1:])
-    rundata = set_PDAF(rundata)
+    #rundata = set_PDAF(rundata)
     rundata.write()
 
