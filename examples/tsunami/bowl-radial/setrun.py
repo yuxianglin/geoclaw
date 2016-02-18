@@ -131,7 +131,7 @@ def setrun(claw_pkg='geoclaw'):
         # Output every iout timesteps with a total of ntot time steps:
         #clawdata.output_step_interval = 10
         #clawdata.total_steps = 50
-        clawdata.output_step_interval = 40
+        clawdata.output_step_interval = 20
         clawdata.total_steps = 200
         clawdata.output_t0 = True
         
@@ -428,7 +428,7 @@ def set_PDAF(rundata):
     rundata.add_data(clawpack.geoclaw.data.PDAFData(), 'pdaf_data')
     rundata.pdaf_data.num_ensembles = 1
     rundata.pdaf_data.rms_obs = 0.1
-    rundata.pdaf_data.delt_obs = 40
+    rundata.pdaf_data.delt_obs = 20
     return rundata
 
 if __name__ == '__main__':

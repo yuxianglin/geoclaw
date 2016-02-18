@@ -59,8 +59,8 @@ c
       integer :: doexit
       integer :: status_pdaf
       real(kind=8) :: h_pkj, hu_pkj, hv_pkj, eta_pkj 
-      CHARACTER(len=2) :: ncycle_str
-      CHARACTER(len=20) :: assim_filestr
+      CHARACTER(len=3) :: ncycle_str
+      CHARACTER(len=21) :: assim_filestr
       LOGICAL :: there
       !INTEGER, PARAMETER :: numofens = 5
       integer :: input_counter
@@ -744,7 +744,8 @@ c             ! use same alg. as when setting refinement when first make new fin
 
               ! After assimilation step, alloc(iadd()) must contain assimilated
               ! value for appropriate valout
-              WRITE(ncycle_str,'(i2.2)') ncycle
+              !WRITE(ncycle_str,'(i2.2)') ncycle
+              WRITE(ncycle_str,'(i3)') ncycle
               print *,'dim_counter = ',dim_counter
          
              !-----------------------------------
@@ -753,9 +754,9 @@ c             ! use same alg. as when setting refinement when first make new fin
               dimcounter: if (dim_counter == dim_ens) then
                           !dim_counter = 0
                    !Read Analysis file and overwrite iadd(1,i,j)
-            !OPEN(20, file = 'state_step'//TRIM(ncycle_str)//'_ana.txt', status = 'replace')
-            WRITE(assim_filestr,'(A20)') 'state_step'//ncycle_str//
-     &      '_ana.txt'
+                WRITE(assim_filestr,'(A21)') 'state_step'//
+     &        TRIM(ADJUSTL(ncycle_str))//'_ana.txt'
+            assim_filestr = TRIM(ADJUSTL(assim_filestr))
             INQUIRE(FILE=assim_filestr, EXIST=there)
             IF (THERE) THEN
                 PRINT *,assim_filestr,' exists'

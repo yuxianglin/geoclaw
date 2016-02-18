@@ -83,7 +83,7 @@ SUBROUTINE prepoststep_ens_pdaf(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
   REAL, ALLOCATABLE :: variance(:)    ! model state variances
   REAL, ALLOCATABLE :: field(:,:)     ! global model field
   CHARACTER(len=2) :: ensstr          ! String for ensemble member
-  CHARACTER(len=2) :: stepstr         ! String for time step
+  CHARACTER(len=3) :: stepstr         ! String for time step
   CHARACTER(len=3) :: anastr          ! String for call type (initial, forecast, analysis)
 
 
@@ -174,11 +174,12 @@ SUBROUTINE prepoststep_ens_pdaf(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
 
      ALLOCATE(field(ny, nx))
 
-     ! Set string for time step
+    !Set string for time step
      IF (step>=0) THEN
-        WRITE (stepstr, '(i2.2)') step
+        !WRITE (stepstr, '(i2.2)') step
+        WRITE (stepstr, '(i3.1)') step
      ELSE
-        WRITE (stepstr, '(i2.2)') -step
+        WRITE (stepstr, '(i3.1)') -step
      END IF
 
      ! Write analysis ensemble
@@ -194,7 +195,7 @@ SUBROUTINE prepoststep_ens_pdaf(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
 
         WRITE (ensstr, '(i2.2)') member
 
-        OPEN(20, file = 'ens_'//TRIM(ensstr)//'_step'//TRIM(stepstr)//'_'//TRIM(anastr)//'.txt', status = 'replace')
+        OPEN(20, file ='ens_'//TRIM(ensstr)//'_step'//TRIM(ADJUSTL(stepstr))//'_'// TRIM(anastr)//'.txt', status = 'replace')
  
         DO i = 1, ny
            WRITE (20, *) field(i, :)
@@ -212,7 +213,7 @@ SUBROUTINE prepoststep_ens_pdaf(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
         field(i, 1:nx) = state_p(1 + (i-1)*nx : i*nx)
      END DO
 
-     OPEN(20, file = 'state_step'//TRIM(stepstr)//'_'//TRIM(anastr)//'.txt', status = 'replace')
+     OPEN(20, file = 'state_step'//TRIM(ADJUSTL(stepstr))//'_'//TRIM(anastr)//'.txt', status = 'replace')
  
      DO i = 1, ny
         WRITE (20, *) field(i, :)
