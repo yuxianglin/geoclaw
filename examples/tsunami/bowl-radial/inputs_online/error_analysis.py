@@ -50,11 +50,11 @@ def error_calc(ictype, num_time_steps, ploterror=True):
 
         #Plot parameters
         if ploterror:
-            plot_title = "timestep = " + str(i)
-            vmin = -0.1
-            vmax = 0.1
-            savefile = "error_state"+str(i)
-            plotmap.class_contour(error, plot_title, vmin, vmax, savefile=None)
+            plot_title = "Error at timestep " + str(i)
+            vmin = -0.0001
+            vmax = 0.0001
+            savefile = "error_state"+str(i) + ".pdf"
+            plotmap.class_contour(error, plot_title, vmin, vmax, savefile=savefile)
         
         print "Max error percentage = ",norm(error_pct.water[~error_pct.water.mask],np.inf)
         print ""

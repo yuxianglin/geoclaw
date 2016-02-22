@@ -102,16 +102,19 @@ if __name__ == "__main__":
     xupper = 98.0
     ylower = -98.0
     yupper = 98.0
-    num_ens = 2
+    num_ens = 3
     ictype = "hump"
+    #ictype = "planewave"
 
     X = np.linspace(xlower, xupper, nx)
     Y = np.linspace(ylower, yupper, ny)
     xv,yv = np.meshgrid(X,Y)
    
     #Make initial ensemble
-    #makeinitens(xv, yv, num_ens, ictype)
-    makeinitens2(xv, yv, num_ens)
+    if ictype == "hump":
+        makeinitens(xv, yv, num_ens, ictype)
+    else:
+        makeinitens2(xv, yv, num_ens)
    
     #Make observations
     xobs_start = 15 

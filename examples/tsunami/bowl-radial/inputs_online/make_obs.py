@@ -24,6 +24,7 @@ def make_obs(mxv, myv, obs_time_list, xobs_start, yobs_start, xobs_end, yobs_end
 
         #Construct observations
         obs_file = "obs_step"+str(j)+".txt"
+        savefile = "obs_step" + str(j) + ".pdf"
         obs_mat[obs_xv,obs_yv] = original_water[obs_xv,obs_yv]
 
         print "Observation at chosen location - ",obs_mat[obs_xv,obs_yv] 
@@ -32,8 +33,8 @@ def make_obs(mxv, myv, obs_time_list, xobs_start, yobs_start, xobs_end, yobs_end
         obs_mat_water = np.ma.array(obs_mat,mask = original_case.land==0.0)
         obs_mat_land = original_case.land
 
-        plotmap.docontour(mxv,myv,obs_mat_water, obs_mat_land, "Observation", -999.0, 1.0)
-        #plt.show()
+
+        plotmap.docontour(mxv,myv,obs_mat_water, obs_mat_land, "Observation", -999.0, 1.0, savefile=savefile)
     
 
 if __name__=="__main__":
@@ -43,8 +44,8 @@ if __name__=="__main__":
     mxv,myv = np.meshgrid(x,y)
     xobs_start = 24 
     yobs_start = 24
-    xobs_end = 26
-    yobs_end = 26
+    xobs_end = 30
+    yobs_end = 30
     nxobs = 3
     nyobs = 3
     ictype = "hump"

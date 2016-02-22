@@ -7,7 +7,8 @@ import numpy.ma as ma
 import myplots
 
 def docontour(x,y,z_water, z_land, plot_title, vmin, vmax, colorbar=True, savefile=None):
-    fig = plt.figure()
+    #fig = plt.figure()
+    #fig.set_canvas(plt.gcf().canvas)
     #from clawpack.visclaw import colormaps, geoplot
     from clawpack.visclaw import geoplot
     
@@ -28,13 +29,14 @@ def docontour(x,y,z_water, z_land, plot_title, vmin, vmax, colorbar=True, savefi
     #plt.figtext(0.4, 0.045, plot_text, color='black',weight='roman',fontsize=12,bbox={'facecolor':'white', 'boxstyle':'round'}, style='italic',ha='center', va='center')
     
     if colorbar:
-        cbar = plt.colorbar(cs, shrink = 0.9)
+        cbar = plt.colorbar(cs, shrink = 0.9,format='%.0e')
         cbar.ax.set_ylabel("WSE")
 
     if savefile is not None:
-        fig.savefig(savefile)
+        plt.savefig(savefile)
 
-    plt.show()
+    plt.close()
+    #plt.show()
         
 
 def class_contour(test_case, plot_title, vmin, vmax, savefile=None):
