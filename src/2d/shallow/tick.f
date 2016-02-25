@@ -5,6 +5,7 @@ c
      &                rest,dt_max)
 c
       use geoclaw_module
+      use sortarr
       use refinement_module, only: varRefTime
       use amr_module
       use topo_module, only: dt_max_dtopo, num_dtopo, topo_finalized,
@@ -80,10 +81,17 @@ c
 #ifndef USE_PDAF
       integer,PARAMETER :: nx1 = 50
       integer, PARAMETER :: ny1 = 50
+      integer :: i1,i2
+      integer, allocatable :: mptr_array(:)
+      integer, allocatable :: ordered_mptr_array(:)
+      real(kind=8),allocatable :: corner_array(:,:)
+      integer fieldval, corner_counter
+      real(kind=8) :: ximc,xim,x,xip,xipc,yjmc,yjm,y,yjp,yjpc,dq
       REAL(KIND=8), DIMENSION(nx1,ny1) :: field = 0.0d0
       iadd(ivar,i,j)  = loc + ivar - 1 + nvar*((j-1)* mitot+i-1)
       iaddaux(iaux,i,j) = locaux + iaux-1 + naux*(i-1) +
      .                                      naux*mitot*(j-1)
+      fielddata(i,j) = loc+nvar*((j-1)*mitot+i-1)
 #endif
 
 c
@@ -154,47 +162,110 @@ c        if this is a restart, make sure chkpt times start after restart time
  5     continue
 
 #ifndef USE_PDAF
-!         input_counter = 0
-!         level = 1
+         !-------------------
+         !Get the order of mptr 
+         !-------------------
+         mptr = lstart(1)
+         !if (mptr .eq. 0) go to 89
+         corner_counter = 0
+89         mptr = node(levelptr, mptr)
+         corner_counter = corner_counter + 1
+         if (mptr .ne. 0) go to 89
+         print *,"num of corners",corner_counter
+
+         allocate(mptr_array(corner_counter))
+         allocate(ordered_mptr_array(corner_counter))
+         allocate(corner_array(corner_counter,2))
+         
+         mptr = lstart(1)
+         do i_pkj =1,corner_counter
+             mptr_array(i_pkj) = mptr    
+             corner_array(i_pkj,1) = rnode(cornxlo,mptr)
+             corner_array(i_pkj,2) = rnode(cornylo,mptr)
+             mptr = node(levelptr, mptr)
+         enddo
+         print *,"mptr_array = ", mptr_array
+      print *,"corner array = ",(corner_array(i1,:),i1=1,corner_counter)
+         
+      call set_global(corner_array,mptr_array,ordered_mptr_array)
+
+
+
+
+
+
+         !input_counter = 0
+         level = 1
 !         lend = lfine
 !         ngrids=0
 ! 65      if (level .gt. lend) go to 91
-!         mptr = lstart(level)
-! 71      if (mptr .eq. 0) go to 82
+         dx = hxposs(level)
+         dy = hyposs(level)
+         mptr = lstart(level)
+! 71      if (mptr .eq. 0) go to 91
+          do i2 = 1,size(ordered_mptr_array)
 !                  input_counter = input_counter + 1
 !                  print *,"input_counter = ", input_counter
 !                  ngrids = ngrids + 1
-!                  nx = node(ndihi,mptr) - node(ndilo, mptr) + 1
-!                  ny = node(ndjhi,mptr) - node(ndjlo, mptr) + 1
-                  loc     = node(store1, 1)
-                  locaux  = node(storeaux,1)
-                  mitot   = nx1 + 2*nghost
-                  mjtot   = ny1 + 2*nghost
+                  mptr1 = ordered_mptr_array(i2)
+                  print *,"mptr1=",mptr1
+                  nx = node(ndihi,mptr1) - node(ndilo, mptr1) + 1
+                  ny = node(ndjhi,mptr1) - node(ndjlo, mptr1) + 1
+                  mitot   = nx + 2*nghost
+                  mjtot   = ny + 2*nghost
+                  !mitot   = nx1 + 2*nghost
+                  !mjtot   = ny1 + 2*nghost
+                  corn1 = rnode(cornxlo,mptr1)
+                  corn2 = rnode(cornylo,mptr1)
                   print *, "nx = ",nx
                   print *, "ny = ",ny
+                  print *, "corners = ",corn1,corn2
+                  !loc = igetsp(mitot*mjtot*nvar)
+                  !node(store1,mptr) = loc
+                  loc     = node(store1, mptr1)
+                  print *,"loc=",loc
+                  locaux  = node(storeaux,mptr1)
 
+                print *,"Read ens_1.tx"
                 OPEN(24,file="../ens_1.txt", STATUS="old")
                 !From left to right. Bsically from 1 to nx
-!                  DO i_pkj = 1,nx
-                  DO i_pkj = 1,nx1
+                  DO i_pkj = 1,nx
                       !READ(24,*) field(i_pkj,:)
                       READ(24,*) field(:,i_pkj)
                   ENDDO
                   CLOSE(24)
+
+                  !DO i_pkj = 1-nghost,nx+nghost
+                  !    x = corn1 + (i_pkj-0.5d0)*dx
+                  !    xim = x - 0.5d0*dx
+                  !    xip = x + 0.5d0*dx
+                  !    DO j_pkj=1-nghost,ny+nghost
+                  !        y = corn2 + (j_pkj - 0.5d0)*dy
+                  !        yjm = y - 0.5d0*dy
+                  !        yjp = y + 0.5d0*dy
+
+                   !print *,xip,xim,yjp,yjm
+                   !fieldval=fielddata(i_pkj+nghost,j_pkj+nghost)
+                   !print *,"fieldval=",fieldval
+                  !!if ((xip > x_low_qinit).and.(xim < x_hi_qinit).and.  
+     &            !!(yjp > y_low_qinit).and.(yjm < y_hi_qinit)) then
+
+                      
                   do j_pkj = nghost+1, mjtot-nghost
                       do i_pkj = nghost+1, mitot-nghost
-                  !        do ivar=1,nvar
-                  !if (abs(alloc(iadd(ivar,i_pkj,j_pkj))) < 1d-90) then
-                  !                alloc(iadd(ivar,i_pkj,j_pkj)) = 0.d0
-                  !            endif
-                  !        enddo
+                          do ivar=1,nvar
+                  if (abs(alloc(iadd(ivar,i_pkj,j_pkj))) < 1d-90) then
+                                  alloc(iadd(ivar,i_pkj,j_pkj)) = 0.d0
+                              endif
+                          enddo
                         ! Extract depth and momenta
-                        
+                        print *,"enterned here" 
                         alloc(iadd(1,i_pkj,j_pkj)) = 
-     .                            field(i_pkj-nghost,j_pkj-nghost) 
-     .                            - alloc(iaddaux(1,i_pkj, j_pkj))
-                        alloc(iadd(2,i_pkj, j_pkj)) = 0.d0
-                        alloc(iadd(3,i_pkj, j_pkj)) = 0.d0
+     .                            field(i_pkj+nghost,j_pkj+nghost) 
+     .                    - alloc(iaddaux(1,i_pkj+nghost, j_pkj+nghost))
+                        alloc(iadd(2,i_pkj+nghost, j_pkj+nghost)) = 0.d0
+                        alloc(iadd(3,i_pkj+nghost, j_pkj+nghost)) = 0.d0
+                  !   endif
                         
                   !      if (alloc(iadd(1,i_pkj,j_pkj)) < 0.d0) then
                   !              alloc(iadd(1,i_pkj,j_pkj)) = 0.d0
@@ -222,7 +293,9 @@ c        if this is a restart, make sure chkpt times start after restart time
      .         !                 alloc(iaddaux(1,i_pkj,j_pkj))
                      enddo
                   enddo
-!             mptr = node(levelptr, mptr)
+             !mptr = node(levelptr, mptr)
+             enddo
+!             if (mptr .ne. 0) go to 71
 !             go to 71
 ! 82         level = level +1
 !             go to 65
