@@ -96,8 +96,8 @@ def makeinit_planewave(xv,yv,perturb):
     
 
 if __name__ == "__main__":
-    nx = 50
-    ny = 50
+    nx = 100
+    ny = 100
     xlower = -98.0
     xupper = 98.0
     ylower = -98.0
@@ -111,7 +111,7 @@ if __name__ == "__main__":
     xv,yv = np.meshgrid(X,Y)
    
     #Make initial ensemble
-    if ictype == "hump":
+    if ictype == "planewave":
         makeinitens(xv, yv, num_ens, ictype)
     else:
         makeinitens2(xv, yv, num_ens)

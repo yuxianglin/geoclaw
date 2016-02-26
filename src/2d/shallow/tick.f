@@ -79,15 +79,17 @@ c
       type(ensstate) :: ens_num(dim_ens)
 #endif
 #ifndef USE_PDAF
-      integer,PARAMETER :: nx1 = 50
-      integer, PARAMETER :: ny1 = 50
-      integer :: i1,i2
+      integer,PARAMETER :: nx1 = 100
+      integer, PARAMETER :: ny1 = 100
+      integer :: i1,i2,i_mod,j_mod
       integer, allocatable :: mptr_array(:)
       integer, allocatable :: ordered_mptr_array(:)
+      integer :: Ntot
       real(kind=8),allocatable :: corner_array(:,:)
       integer fieldval, corner_counter
       real(kind=8) :: ximc,xim,x,xip,xipc,yjmc,yjm,y,yjp,yjpc,dq
-      REAL(KIND=8), DIMENSION(nx1,ny1) :: field = 0.0d0
+      !REAL(KIND=8), DIMENSION(nx1,ny1) :: field = 0.0d0
+      REAL(KIND=8) :: field(nx1*ny1) = 0.0d0
       iadd(ivar,i,j)  = loc + ivar - 1 + nvar*((j-1)* mitot+i-1)
       iaddaux(iaux,i,j) = locaux + iaux-1 + naux*(i-1) +
      .                                      naux*mitot*(j-1)
@@ -226,14 +228,18 @@ c        if this is a restart, make sure chkpt times start after restart time
                   print *,"loc=",loc
                   locaux  = node(storeaux,mptr1)
 
+
                 print *,"Read ens_1.tx"
-                OPEN(24,file="../ens_1.txt", STATUS="old")
+                OPEN(24,file="../ens_mod.txt", STATUS="old")
                 !From left to right. Bsically from 1 to nx
-                  DO i_pkj = 1,nx
-                      !READ(24,*) field(i_pkj,:)
-                      READ(24,*) field(:,i_pkj)
+                Ntot = nx*ny
+                !READ(24,*) field((i2-1)*N+1:i2*N)
+                  DO i_pkj = 1,Ntot
+                      !READ(24,*) field((i2-1)*Ntot+i_pkj:i2*Ntot)
+                      READ(24,*) field((i2-1)*Ntot+i_pkj)
+                      print *,i_pkj
                   ENDDO
-                  CLOSE(24)
+                  !CLOSE(24)
 
                   !DO i_pkj = 1-nghost,nx+nghost
                   !    x = corn1 + (i_pkj-0.5d0)*dx
@@ -259,12 +265,14 @@ c        if this is a restart, make sure chkpt times start after restart time
                               endif
                           enddo
                         ! Extract depth and momenta
-                        print *,"enterned here" 
+                        i_mod = i_pkj-nghost
+                        j_mod = j_pkj - nghost
+                        print *,i_mod,j_mod
                         alloc(iadd(1,i_pkj,j_pkj)) = 
-     .                            field(i_pkj+nghost,j_pkj+nghost) 
-     .                    - alloc(iaddaux(1,i_pkj+nghost, j_pkj+nghost))
-                        alloc(iadd(2,i_pkj+nghost, j_pkj+nghost)) = 0.d0
-                        alloc(iadd(3,i_pkj+nghost, j_pkj+nghost)) = 0.d0
+     .                            field(i_mod+nx*(j_mod-1)) 
+     .                    - alloc(iaddaux(1,i_pkj, j_pkj))
+                        alloc(iadd(2,i_pkj, j_pkj)) = 0.d0
+                        alloc(iadd(3,i_pkj, j_pkj)) = 0.d0
                   !   endif
                         
                   !      if (alloc(iadd(1,i_pkj,j_pkj)) < 0.d0) then
@@ -295,6 +303,7 @@ c        if this is a restart, make sure chkpt times start after restart time
                   enddo
              !mptr = node(levelptr, mptr)
              enddo
+              CLOSE(24)
 !             if (mptr .ne. 0) go to 71
 !             go to 71
 ! 82         level = level +1
