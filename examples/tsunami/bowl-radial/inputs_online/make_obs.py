@@ -36,11 +36,37 @@ def make_obs(mxv, myv, obs_time_list, xobs_start, yobs_start, xobs_end, yobs_end
 
         plotmap.docontour(mxv,myv,obs_mat_water, obs_mat_land, "Observation", -999.0, 1.0, savefile=savefile)
     
+def make_obs_testing(mxv, myv, obs_time_list, xobs_start, yobs_start, xobs_end, yobs_end, nxobs, nyobs, ictype):
+
+    obs_x = np.linspace(xobs_start,xobs_end, nxobs).astype('int32')
+    obs_y = np.linspace(yobs_start,yobs_end, nyobs).astype('int32')
+    print obs_x, obs_y
+    obs_xv, obs_yv = np.meshgrid(obs_x, obs_y)
+    obs_mat = np.ones((100,100))*-999.0
+
+    for i,j in enumerate(obs_time_list):
+
+        read_geoclaw_output = "../_output_original_" + ictype + "/fort.q" + str(i+1).zfill(4)
+        #original_case = ramr.ReadAmrForLevel(read_geoclaw_output, 1.0)
+        #original_water = original_case.water
+        #original_land = original_case.land
+        #mxv = original_case.mxv
+        #myv = original_case.myv
+
+        #Construct observations
+        obs_file = "obs_step"+str(j)+".txt"
+        savefile = "obs_step" + str(j) + ".pdf"
+        obs_mat[obs_xv,obs_yv] = 0.0001
+
+        print "Observation at chosen location - ",obs_mat[obs_xv,obs_yv] 
+        print "Writing observation file - ", obs_file
+        np.savetxt(obs_file, obs_mat, fmt = "%12.10f")
+    
 
 if __name__=="__main__":
 
-    x = np.linspace(-98,98,50)
-    y = np.linspace(-98,98,50)
+    x = np.linspace(-98,98,100)
+    y = np.linspace(-98,98,100)
     mxv,myv = np.meshgrid(x,y)
     xobs_start = 24 
     yobs_start = 24
@@ -51,4 +77,5 @@ if __name__=="__main__":
     ictype = "hump"
     #num_time_steps=6
 
-    make_obs(mxv, myv, np.linspace(40,200,5, dtype="int32"), xobs_start, yobs_start, xobs_end, yobs_end, nxobs, nyobs, ictype)
+    #make_obs(mxv, myv, np.linspace(40,200,5, dtype="int32"), xobs_start, yobs_start, xobs_end, yobs_end, nxobs, nyobs, ictype)
+    make_obs_testing(mxv, myv, np.linspace(20,200,10, dtype="int32"), xobs_start, yobs_start, xobs_end, yobs_end, nxobs, nyobs, ictype)

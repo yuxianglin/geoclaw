@@ -49,20 +49,22 @@ SUBROUTINE distribute_state_pdaf(dim_p, state_p)
 
 ! *** local variables ***
   INTEGER :: i, j         ! Counters
+  logical :: yo = .true.
 
 
 ! *******************************************
 ! *** Initialize model fields from state  ***
 !********************************************
 
-  !DO j = 1, nx
-  !   field(1:ny, j) = state_p(1 + (j-1)*ny : j*ny)
-  !END DO
   !Make sure state_p has data as per geoclaw configuration: left to right
   ! and then row-wise
-  DO i = 1, ny
-     field(i,1:nx) = state_p(1 + (i-1)*nx : i*nx)
-  END DO
-  !write( *,*) "Dimension of state vector",dim_p !2500
+  !DO i = 1, ny
+  !   field(i,1:nx) = state_p(1 + (i-1)*nx : i*nx)
+  !END DO
+  print *,"State distributed successfully1"
+  yo = allocated(field)
+  print *,"field is ", yo
+  field(:) = state_p(:)
+  print *,"State distributed successfully2"
 
 END SUBROUTINE distribute_state_pdaf

@@ -49,8 +49,10 @@ SUBROUTINE init_ens(filtertype, dim_p, dim_ens, state_p, Uinv, &
 
 ! *** local variables ***
   INTEGER :: i, j, member  ! Counters
+  integer :: nx1 = 50
+  integer :: ny1 = 50
   INTEGER, SAVE :: allocflag = 0      ! Flag for memory counting
-  REAL, ALLOCATABLE :: field(:,:)     ! global model field
+  REAL, ALLOCATABLE :: field(:)     ! global model field
   CHARACTER(len=2) :: ensstr          ! String for ensemble member
 
 
@@ -64,8 +66,8 @@ SUBROUTINE init_ens(filtertype, dim_p, dim_ens, state_p, Uinv, &
   WRITE (*, '(9x, a, i5)') '--- Ensemble size:  ', dim_ens
   
   ! allocate memory for temporary fields
-  ALLOCATE(field(ny, nx))
-
+  ALLOCATE(field(ny*nx))
+ print *, nx, ny
 
 ! ********************************
 ! *** Read ensemble from files ***
@@ -73,22 +75,20 @@ SUBROUTINE init_ens(filtertype, dim_p, dim_ens, state_p, Uinv, &
 
   DO member = 1, dim_ens
      WRITE (ensstr, '(i2)') member
-     OPEN(20, file = '../ens_'//TRIM(ADJUSTL(ensstr))//'.txt', status='old')
- 
-     DO i = 1, ny
-        READ (20, *) field(i, :)
-     END DO
-     !DO j = 1, nx
-     !   ens_p(1 + (j-1)*ny : j*ny, member) = field(1:ny, j)
+     OPEN(24, file = '../ens_'//TRIM(ADJUSTL(ensstr))//'.txt', status='old')
+     do i=1,4
+         !do j =1,nx*ny
+         read(24,*) field((i-1)*nx1*ny1 + i)
+     enddo
+     CLOSE(24)
+     ens_p(:,member) = field(:)
+     !DO i = 1, ny
+     !   READ (20, *) field(i, :)
      !END DO
-     !DO j = 1, nx
-     !   ens_p(1 + (j-1)*ny : j*ny, member) = field(j, 1:ny)
+     !DO i = 1, ny
+     !   ens_p(1 + (i-1)*nx : i*nx, member) = field(i, 1:nx)
      !END DO
-     DO i = 1, ny
-        ens_p(1 + (i-1)*nx : i*nx, member) = field(i, 1:nx)
-     END DO
 
-     CLOSE(20)
   END DO
 
 

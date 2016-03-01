@@ -95,7 +95,7 @@ program amr2
     use fgmax_module, only: set_fgmax, FG_num_fgrids
 
 #ifdef USE_PDAF
-    use mod_model, only : nx,ny, field, total_steps, dtinit, time
+    use mod_model, only : nx,ny, field,total_steps, dtinit, time
 #endif
 
     implicit none
@@ -601,7 +601,8 @@ program amr2
 
     !ALLOCATE(field(ny+2*nghost,nx+2*nghost))
     !ALLOCATE(field(ny,nx))
-    ALLOCATE(field(ny,nx))
+    !ALLOCATE(field(ny,nx))
+    ALLOCATE(field(ny*nx))
    
    ! ************************************
    ! *** Read initial field from file ***

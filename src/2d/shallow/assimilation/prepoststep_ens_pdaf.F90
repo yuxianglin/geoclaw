@@ -81,7 +81,8 @@ SUBROUTINE prepoststep_ens_pdaf(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
   REAL :: invdim_ensm1                ! Inverse of ensemble size minus 1
   REAL :: rmserror_est                ! estimated RMS error
   REAL, ALLOCATABLE :: variance(:)    ! model state variances
-  REAL, ALLOCATABLE :: field(:,:)     ! global model field
+  !REAL, ALLOCATABLE :: field(:,:)     ! global model field
+  REAL, ALLOCATABLE :: field(:)     ! global model field
   CHARACTER(len=2) :: ensstr          ! String for ensemble member
   CHARACTER(len=3) :: stepstr         ! String for time step
   CHARACTER(len=3) :: anastr          ! String for call type (initial, forecast, analysis)
@@ -172,7 +173,7 @@ SUBROUTINE prepoststep_ens_pdaf(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
 
      WRITE (*, '(8x, a)') '--- write ensemble and state estimate'
 
-     ALLOCATE(field(ny, nx))
+     ALLOCATE(field(ny*nx))
 
     !Set string for time step
      IF (step>=0) THEN
@@ -184,22 +185,21 @@ SUBROUTINE prepoststep_ens_pdaf(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
 
      ! Write analysis ensemble
      DO member = 1, dim_ens
-        !DO j = 1, nx
-        !   field(1:ny, j) = ens_p(1 + (j-1)*ny : j*ny, member)
-        !END DO
        
         !Modified for GEOCLAW format match 
-        DO i = 1, ny
-           field(i, 1:nx) = ens_p(1 + (i-1)*nx : i*nx, member)
-        END DO
+        !DO i = 1, ny
+        !   field(i, 1:nx) = ens_p(1 + (i-1)*nx : i*nx, member)
+        !END DO
+        field(:) = ens_p(:,member)
 
         WRITE (ensstr, '(i2.2)') member
 
         OPEN(20, file ='ens_'//TRIM(ensstr)//'_step'//TRIM(ADJUSTL(stepstr))//'_'// TRIM(anastr)//'.txt', status = 'replace')
  
-        DO i = 1, ny
-           WRITE (20, *) field(i, :)
-        END DO
+        !DO i = 1, ny
+        !   WRITE (20, *) field(i, :)
+        !END DO
+        WRITE (20, *) field
 
         CLOSE(20)
      END DO
@@ -209,15 +209,17 @@ SUBROUTINE prepoststep_ens_pdaf(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
      !   field(1:ny, j) = state_p(1 + (j-1)*ny : j*ny)
      !END DO
      
-     DO i = 1, ny
-        field(i, 1:nx) = state_p(1 + (i-1)*nx : i*nx)
-     END DO
+     !DO i = 1, ny
+     !   field(i, 1:nx) = state_p(1 + (i-1)*nx : i*nx)
+     !END DO
+     field(:) = state_p(:)
 
      OPEN(20, file = 'state_step'//TRIM(ADJUSTL(stepstr))//'_'//TRIM(anastr)//'.txt', status = 'replace')
  
-     DO i = 1, ny
-        WRITE (20, *) field(i, :)
-     END DO
+     !DO i = 1, ny
+     !   WRITE (20, *) field(i, :)
+     !END DO
+     WRITE (20, *) field
 
      CLOSE(20)
 
