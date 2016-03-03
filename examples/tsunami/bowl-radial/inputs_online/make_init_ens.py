@@ -102,7 +102,7 @@ if __name__ == "__main__":
     xupper = 98.0
     ylower = -98.0
     yupper = 98.0
-    num_ens = 1
+    num_ens = 3
     ictype = "hump"
     #ictype = "planewave"
 

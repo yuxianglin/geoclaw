@@ -196,13 +196,26 @@ c        if this is a restart, make sure chkpt times start after restart time
       call set_global(corner_array,mptr_array,ordered_mptr_array)
 
 
+          OPEN(24,file="../ens_1.txt", STATUS="old")
+          do i2 = 1,size(ordered_mptr_array)
+                  mptr1 = ordered_mptr_array(i2)
+                  nx = node(ndihi,mptr1) - node(ndilo, mptr1) + 1
+                  ny = node(ndjhi,mptr1) - node(ndjlo, mptr1) + 1
+                  Ntot = nx*ny
+                  DO i_pkj = 1,Ntot
+                      READ(24,*) field((i2-1)*Ntot+i_pkj)
+                  !    print *,i_pkj
+                  ENDDO
+          ENDDO
+          CLOSE(24)
+          print *,"Read ens_1.tx"
 !         level = 1
 !         lend = lfine
 !         ngrids=0
 ! 65      if (level .gt. lend) go to 91
+
          mptr = lstart(1)
 ! 71      if (mptr .eq. 0) go to 91
-          OPEN(24,file="../ens_1.txt", STATUS="old")
           do i2 = 1,size(ordered_mptr_array)
                   mptr1 = ordered_mptr_array(i2)
                   nx = node(ndihi,mptr1) - node(ndilo, mptr1) + 1
@@ -213,6 +226,7 @@ c        if this is a restart, make sure chkpt times start after restart time
                   corn2 = rnode(cornylo,mptr1)
                   loc     = node(store1, mptr1)
                   locaux  = node(storeaux,mptr1)
+                  Ntot = nx*ny
                   
                   print *,"loc=",loc
                   print *,"mptr1=",mptr1
@@ -221,13 +235,7 @@ c        if this is a restart, make sure chkpt times start after restart time
                   print *, "corners = ",corn1,corn2
 
 
-                print *,"Read ens_1.tx"
                 !From left to right. Bsically from 1 to nx
-                Ntot = nx*ny
-                  DO i_pkj = 1,Ntot
-                      READ(24,*) field((i2-1)*Ntot+i_pkj)
-                      print *,i_pkj
-                  ENDDO
                   !CLOSE(24)
 
                   do j_pkj = nghost+1, mjtot-nghost
@@ -241,8 +249,11 @@ c        if this is a restart, make sure chkpt times start after restart time
                         i_mod = i_pkj-nghost
                         j_mod = j_pkj - nghost
                         print *,i_mod,j_mod
-                        alloc(iadd(1,i_pkj,j_pkj)) = 
-     .                            field(i_mod+nx*(j_mod-1)) 
+!                        alloc(iadd(1,i_pkj,j_pkj)) = 
+!     .                            field(i_mod+nx*(j_mod-1)) 
+!     .                    - alloc(iaddaux(1,i_pkj, j_pkj))
+                        alloc(iadd(1,i_pkj,j_pkj)) =
+     .              field((i2-1)*Ntot+i_mod+nx*(j_mod-1))
      .                    - alloc(iaddaux(1,i_pkj, j_pkj))
                         alloc(iadd(2,i_pkj, j_pkj)) = 0.d0
                         alloc(iadd(3,i_pkj, j_pkj)) = 0.d0
@@ -276,7 +287,6 @@ c        if this is a restart, make sure chkpt times start after restart time
                   enddo
              !mptr = node(levelptr, mptr)
              enddo
-              CLOSE(24)
 !             if (mptr .ne. 0) go to 71
 !             go to 71
 ! 82         level = level +1
@@ -392,7 +402,7 @@ c        if this is a restart, make sure chkpt times start after restart time
                   print *, "ny = ",ny
                   print *, "corners = ",corn1,corn2
 
-
+                  Ntot = nx*ny
                   do j_pkj = nghost+1, mjtot-nghost
                       do i_pkj = nghost+1, mitot-nghost
                           do ivar=1,nvar
@@ -404,17 +414,24 @@ c        if this is a restart, make sure chkpt times start after restart time
                         i_mod = i_pkj-nghost
                         j_mod = j_pkj - nghost
                         print *,i_mod,j_mod
-                        alloc(iadd(1,i_pkj,j_pkj)) = 
-     .                            field(i_mod+nx*(j_mod-1)) 
+!                        alloc(iadd(1,i_pkj,j_pkj)) = 
+!     .                            field(i_mod+nx*(j_mod-1)) 
+!     .                    - alloc(iaddaux(1,i_pkj, j_pkj))
+                        alloc(iadd(1,i_pkj,j_pkj)) =
+     .              field((i2-1)*Ntot+i_mod+nx*(j_mod-1))
      .                    - alloc(iaddaux(1,i_pkj, j_pkj))
                         alloc(iadd(2,i_pkj, j_pkj)) = 
-     .               ens_num(dim_counter + 1)%mom(1, i_mod+nx*(j_mod-1))
-                        alloc(iadd(3,i_pkj, j_pkj)) = 
-     .             ens_num(dim_counter + 1)%mom(2, i_mod + nx*(j_mod-1))
+     .   ens_num(dim_counter + 1)%mom(1, (i2-1)*Ntot+i_mod+nx*(j_mod-1))
+                    alloc(iadd(3,i_pkj, j_pkj)) = 
+     .   ens_num(dim_counter + 1)%mom(2, (i2-1)*Ntot+i_mod+nx*(j_mod-1))
 !                        alloc(iadd(2,i_pkj, j_pkj)) = 
-!     .                    ens_num(dim_counter + 1)%mom(1, i_mod,j_mod)
+!     .               ens_num(dim_counter + 1)%mom(1, i_mod+nx*(j_mod-1))
 !                        alloc(iadd(3,i_pkj, j_pkj)) = 
-!     .                    ens_num(dim_counter + 1)%mom(2, i_mod,j_mod)
+!     .             ens_num(dim_counter + 1)%mom(2, i_mod + nx*(j_mod-1))
+!!                        alloc(iadd(2,i_pkj, j_pkj)) = 
+!!     .                    ens_num(dim_counter + 1)%mom(1, i_mod,j_mod)
+!!                        alloc(iadd(3,i_pkj, j_pkj)) = 
+!!     .                    ens_num(dim_counter + 1)%mom(2, i_mod,j_mod)
                   !   endif
                         
                   !      if (alloc(iadd(1,i_pkj,j_pkj)) < 0.d0) then
@@ -444,6 +461,7 @@ c        if this is a restart, make sure chkpt times start after restart time
                      enddo
                   enddo
              enddo
+             print *,"field = ",field
          deallocate(mptr_array)
          deallocate(ordered_mptr_array)
          deallocate(corner_array)
@@ -871,7 +889,7 @@ c             ! use same alg. as when setting refinement when first make new fin
                   corn2 = rnode(cornylo,mptr1)
                   loc     = node(store1, mptr1)
                   locaux  = node(storeaux,mptr1)
-                  
+                  Ntot = nx*ny 
                   print *,"loc=",loc
                   print *,"mptr1=",mptr1
                   print *, "nx = ",nx
@@ -890,39 +908,46 @@ c             ! use same alg. as when setting refinement when first make new fin
                         i_mod = i_pkj-nghost
                         j_mod = j_pkj - nghost
                         print *,i_mod,j_mod
-                        field(i_mod+nx*(j_mod-1)) = 
+                        field((i2-1)*Ntot+i_mod+nx*(j_mod-1)) = 
      .      alloc(iadd(1,i_pkj,j_pkj)) + alloc(iaddaux(1,i_pkj, j_pkj))
-                    ens_num(dim_counter + 1)%mom(1, i_mod+nx*(j_mod-1))=
+         ens_num(dim_counter + 1)%mom(1,(i2-1)*Ntot+i_mod+nx*(j_mod-1))=
      .                      alloc(iadd(2,i_pkj, j_pkj))
 
-                    ens_num(dim_counter + 1)%mom(2, i_mod+nx*(j_mod-1))=
+         ens_num(dim_counter + 1)%mom(2,(i2-1)*Ntot+i_mod+nx*(j_mod-1))=
      .                  alloc(iadd(3,i_pkj, j_pkj)) 
-                  !   endif
-                        
-                  !      if (alloc(iadd(1,i_pkj,j_pkj)) < 0.d0) then
-                  !              alloc(iadd(1,i_pkj,j_pkj)) = 0.d0
-                  !      endif
-                  
-                  !        do ivar=1,nvar
-                  !if (abs(alloc(iadd(ivar,i_pkj,j_pkj))) < 1d-90) then
-                  !                alloc(iadd(ivar,i_pkj,j_pkj)) = 0.d0
-                  !            endif
-                  !        enddo
-                        !h_pkj = alloc(iadd(1,i_pkj,j_pkj)) 
-                        !hu_pkj = alloc(iadd(2,i_pkj,j_pkj))
-                        !hv_pkj = alloc(iadd(3,i_pkj,j_pkj))
-                        !eta_pkj = h_pkj + alloc(iaddaux(1,i_pkj,j_pkj))
-                        !print *,field(i_pkj, j_pkj)
-                        
-                        !if (abs(eta_pkj) < 1d-90) then
-                        !   eta_pkj = 0.d0
-                        !end if
+!                        field(i_mod+nx*(j_mod-1)) = 
+!     .      alloc(iadd(1,i_pkj,j_pkj)) + alloc(iaddaux(1,i_pkj, j_pkj))
+!                    ens_num(dim_counter + 1)%mom(1, i_mod+nx*(j_mod-1))=
+!     .                      alloc(iadd(2,i_pkj, j_pkj))
+!
+!                    ens_num(dim_counter + 1)%mom(2, i_mod+nx*(j_mod-1))=
+!     .                  alloc(iadd(3,i_pkj, j_pkj)) 
+!                  !   endif
+!                        
+!                  !      if (alloc(iadd(1,i_pkj,j_pkj)) < 0.d0) then
+!                  !              alloc(iadd(1,i_pkj,j_pkj)) = 0.d0
+!                  !      endif
+!                  
+!                  !        do ivar=1,nvar
+!                  !if (abs(alloc(iadd(ivar,i_pkj,j_pkj))) < 1d-90) then
+!                  !                alloc(iadd(ivar,i_pkj,j_pkj)) = 0.d0
+!                  !            endif
+!                  !        enddo
+!                        !h_pkj = alloc(iadd(1,i_pkj,j_pkj)) 
+!                        !hu_pkj = alloc(iadd(2,i_pkj,j_pkj))
+!                        !hv_pkj = alloc(iadd(3,i_pkj,j_pkj))
+!                        !eta_pkj = h_pkj + alloc(iaddaux(1,i_pkj,j_pkj))
+!                        !print *,field(i_pkj, j_pkj)
+!                        
+!                        !if (abs(eta_pkj) < 1d-90) then
+!                        !   eta_pkj = 0.d0
+!                        !end if
 
-                        !print *,h_pkj, hu_pkj, hv_pkj, eta_pkj
-               !         print *,alloc(iadd(1,i_pkj,j_pkj)), 
-     .         !                 alloc(iadd(2,i_pkj,j_pkj)),
-     .         !                 alloc(iadd(3,i_pkj,j_pkj)),  
-     .         !                 alloc(iaddaux(1,i_pkj,j_pkj))
+!                        !print *,h_pkj, hu_pkj, hv_pkj, eta_pkj
+!               !         print *,alloc(iadd(1,i_pkj,j_pkj)), 
+!     .         !                 alloc(iadd(2,i_pkj,j_pkj)),
+!     .         !                 alloc(iadd(3,i_pkj,j_pkj)),  
+!     .         !                 alloc(iaddaux(1,i_pkj,j_pkj))
                      enddo
                   enddo
              enddo
@@ -1020,6 +1045,45 @@ c             ! use same alg. as when setting refinement when first make new fin
             ENDIF
             !print *,'field read from PDAF output = ', field 
                 
+         !-------------------
+         !Get the order of mptr 
+         !-------------------
+         mptr = lstart(1)
+         !if (mptr .eq. 0) go to 89
+         corner_counter = 0
+95         mptr = node(levelptr, mptr)
+         corner_counter = corner_counter + 1
+         if (mptr .ne. 0) go to 95
+         print *,"num of corners",corner_counter
+
+         allocate(mptr_array(corner_counter))
+         allocate(ordered_mptr_array(corner_counter))
+         allocate(corner_array(corner_counter,2))
+         
+         mptr = lstart(1)
+         do i_pkj =1,corner_counter
+             mptr_array(i_pkj) = mptr    
+             corner_array(i_pkj,1) = rnode(cornxlo,mptr)
+             corner_array(i_pkj,2) = rnode(cornylo,mptr)
+             mptr = node(levelptr, mptr)
+         enddo
+         print *,"mptr_array = ", mptr_array
+      print *,"corner array = ",(corner_array(i1,:),i1=1,corner_counter)
+         
+      call set_global(corner_array,mptr_array,ordered_mptr_array)
+
+         mptr = lstart(1)
+          do i2 = 1,size(ordered_mptr_array)
+                  mptr1 = ordered_mptr_array(i2)
+                  nx = node(ndihi,mptr1) - node(ndilo, mptr1) + 1
+                  ny = node(ndjhi,mptr1) - node(ndjlo, mptr1) + 1
+                  mitot   = nx + 2*nghost
+                  mjtot   = ny + 2*nghost
+                  corn1 = rnode(cornxlo,mptr1)
+                  corn2 = rnode(cornylo,mptr1)
+                  loc     = node(store1, mptr1)
+                  locaux  = node(storeaux,mptr1)
+                  Ntot = nx*ny 
                   do j_pkj = nghost+1, mjtot-nghost
                       do i_pkj = nghost+1, mitot-nghost
                         i_mod = i_pkj-nghost
@@ -1027,15 +1091,22 @@ c             ! use same alg. as when setting refinement when first make new fin
                           !READ(20,*) field(i_pkj, j_pkj)
                           !print *, field(i_pkj-nghost, j_pkj-nghost)
                         alloc(iadd(1,i_pkj,j_pkj)) = 
-     .                            field(i_mod+nx*(j_mod-1)) 
+     .                            field((i2-1)*Ntot+i_mod+nx*(j_mod-1)) 
      .                    - alloc(iaddaux(1,i_pkj, j_pkj))
-!                          alloc(iadd(1,i_pkj,j_pkj)) = 
-!     .                            field(i_pkj-nghost,j_pkj-nghost) 
-!     .                            - alloc(iaddaux(1,i_pkj, j_pkj))
+!                        alloc(iadd(1,i_pkj,j_pkj)) = 
+!     .                            field(i_mod+nx*(j_mod-1)) 
+!     .                    - alloc(iaddaux(1,i_pkj, j_pkj))
+!!                          alloc(iadd(1,i_pkj,j_pkj)) = 
+!!     .                            field(i_pkj-nghost,j_pkj-nghost) 
+!!     .                            - alloc(iaddaux(1,i_pkj, j_pkj))
                           !print *,alloc(iadd(1,i_pkj,j_pkj))
                       enddo
                   !print *,''
                   enddo
+            enddo
+         deallocate(mptr_array)
+         deallocate(ordered_mptr_array)
+         deallocate(corner_array)
                           
                    
                    if ( .not.vtime) goto 202

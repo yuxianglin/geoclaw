@@ -426,8 +426,8 @@ def setgeo(rundata):
 def set_PDAF(rundata):
     import clawpack.geoclaw.data
     rundata.add_data(clawpack.geoclaw.data.PDAFData(), 'pdaf_data')
-    rundata.pdaf_data.num_ensembles = 1
-    rundata.pdaf_data.rms_obs = 0.1
+    rundata.pdaf_data.num_ensembles = 3
+    rundata.pdaf_data.rms_obs = 0.000001
     rundata.pdaf_data.delt_obs = 20
     return rundata
 
