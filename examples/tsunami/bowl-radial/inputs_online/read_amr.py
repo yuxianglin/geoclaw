@@ -35,7 +35,7 @@ class ReadAmr(object):
                     else:
                         value_list.append(float(value[0]))
                     line_number_list.append(unwanted_line_number)
-        return value_list, line_number_list
+        return np.array(value_list), line_number_list
 
     def amrdataframe(self):
         # Read all levels grid
@@ -57,19 +57,24 @@ class ReadAmr(object):
             x_right = self.x_low[num] + self.dx[num]*self.mx[num] - self.dx[num]/2.0
             y_down = self.y_low[num] + self.dy[num]/2.0
             y_up = self.y_low[num] + self.dy[num]*self.my[num] - self.dy[num]/2.0
-            xrow = np.linspace(x_left , x_right, num = self.mx[num])
+            xrow = np.linspace(x_left , x_right, num = self.mx[num],dtype='float64')
             #yrow = np.linspace(y_up , y_down, num = self.my[num])
-            yrow = np.linspace(y_down , y_up, num = self.my[num])
+            yrow = np.linspace(y_down , y_up, num = self.my[num],dtype='float64')
             xmesh,ymesh = np.meshgrid(xrow,yrow)
             xmain = np.append(xmain, np.ravel(xmesh))
             ymain = np.append(ymain, np.ravel(ymesh))
-        xseries = pd.Series(xmain, name='xcoord')
-        yseries = pd.Series(ymain, name='ycoord')
-        data = pd.concat([data,xseries,yseries], axis=1) 
-        #data = data.astype(float)
-        #data["eta"] = data["eta"].convert_objects(convert_numeric=True)
-        #pd.set_option('display.float_format', '{:.16g}'.format)
+        #xseries = pd.Series(xmain, name='xcoord')
+        #yseries = pd.Series(ymain, name='ycoord')
+        #data = pd.concat([data,xseries,yseries], axis=1) 
+        #data.assign(xcoord = xmain)
+        data["xcoord"]=xmain
+        data["ycoord"]=ymain
+
+        #Rearranging xcoord and ycoord as per domain mesh
+        #data.sort_index(by=['amrlevel','ycoord', 'xcoord'], ascending=[True,True,True],inplace=True)
+        data.sort_values(by=['amrlevel','ycoord', 'xcoord'], ascending=[True,True,True],inplace=True)
         return data
+
      
 def print_full(x, filename):
     pd.set_option('display.max_rows', len(x))

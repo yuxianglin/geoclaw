@@ -16,7 +16,7 @@ def gen_figures(obs_time, plot_type, vmin, vmax, colorbar=False,ictype="hump"):
 
         if plot_type=="init":
             outfile = "ens_"+str(j)+"_ini.pdf"
-            state = np.loadtxt("ens_" + str(j) + ".txt")
+            state = np.loadtxt("../ens_" + str(j) + ".txt")
             title = "Initial state: Ensemble " + str(j)
 
         if plot_type=="for":
@@ -45,8 +45,8 @@ def gen_figures(obs_time, plot_type, vmin, vmax, colorbar=False,ictype="hump"):
 
 if __name__=="__main__":
     numens = 2
-    x = np.linspace(-98.,98.,50)
-    y = np.linspace(-98.,98.,50)
+    x = np.linspace(-99.,99.,100)
+    y = np.linspace(-99.,99.,100)
     mxv,myv = np.meshgrid(x,y)
     obs_time_list = [20,40,60,80,100,120,140,160,180]
 

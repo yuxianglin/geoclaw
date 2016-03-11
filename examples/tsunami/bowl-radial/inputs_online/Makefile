@@ -1,2 +1,2 @@
 clean:
-	rm -rf *.png ens_* obs* *.pyc fort* *.data
+	rm -rf *.png ens_* obs* *.pyc fort* *.data *.pdf

@@ -45,7 +45,8 @@ SUBROUTINE init_dim_obs_pdaf(step, dim_obs_p)
 ! *** Local variables
   INTEGER :: i, j                     ! Counters
   INTEGER :: cnt, cnt0                ! Counters
-  REAL, ALLOCATABLE :: obs_field(:,:) ! Array for observation field read from file
+  !REAL, ALLOCATABLE :: obs_field(:,:) ! Array for observation field read from file
+  REAL, ALLOCATABLE :: obs_field(:) ! Array for observation field read from file
   CHARACTER(len=3) :: stepstr         ! String for time step
 
 
@@ -54,7 +55,8 @@ SUBROUTINE init_dim_obs_pdaf(step, dim_obs_p)
 ! ****************************************
 
   ! Read observation field form file
-  ALLOCATE(obs_field(ny, nx))
+  !ALLOCATE(obs_field(ny, nx))
+  ALLOCATE(obs_field(ny*nx))
 
 !  IF (step<10) THEN
 !     WRITE (stepstr, '(i1)') step
@@ -64,17 +66,21 @@ SUBROUTINE init_dim_obs_pdaf(step, dim_obs_p)
      WRITE (stepstr, '(i3)') step
 
   OPEN (12, file='../obs_step'//TRIM(ADJUSTL(stepstr))//'.txt', status='old')
-  DO i = 1, ny
-     READ (12, *) obs_field(i, :)
-  END DO
+!  DO i = 1, ny
+!     READ (12, *) obs_field(i, :)
+!  END DO
+     READ (12, *) obs_field
   CLOSE (12)
 
   ! Count observations
   cnt = 0
-  DO j = 1, nx
-     DO i= 1, ny
-        IF (obs_field(i,j) > -999.0) cnt = cnt + 1
-     END DO
+!  DO j = 1, nx
+!     DO i= 1, ny
+!        IF (obs_field(i,j) > -999.0) cnt = cnt + 1
+!     END DO
+!  END DO
+  DO j = 1, nx*ny
+     IF (obs_field(j) > -999.0) cnt = cnt + 1
   END DO
 
   ! Set number of observations
@@ -88,16 +94,24 @@ SUBROUTINE init_dim_obs_pdaf(step, dim_obs_p)
 
   cnt = 0
   cnt0 = 0
-  DO j = 1, nx
-     DO i= 1, ny
-        cnt0 = cnt0 + 1
-        IF (obs_field(i,j) > -999.0) THEN
-           cnt = cnt + 1
-           obs_index(cnt) = cnt0      ! Index of observation in state vector
-           obs(cnt) = obs_field(i, j) ! Vector of observations
-        END IF
-     END DO
-  END DO
+! DO j = 1, ny
+!     DO i= 1, nx
+!        cnt0 = cnt0 + 1
+!        IF (obs_field(i,j) > -999.0) THEN
+!           cnt = cnt + 1
+!           obs_index(cnt) = cnt0      ! Index of observation in state vector
+!           obs(cnt) = obs_field(i, j) ! Vector of observations
+!        END IF
+!     END DO
+!  END DO
+ DO j = 1, ny*nx
+    cnt0 = cnt0 + 1
+    IF (obs_field(j) > -999.0) THEN
+       cnt = cnt + 1
+       obs_index(cnt) = cnt0      ! Index of observation in state vector
+       obs(cnt) = obs_field(j) ! Vector of observations
+    END IF
+ END DO
 
 
 ! *** Clean up ***

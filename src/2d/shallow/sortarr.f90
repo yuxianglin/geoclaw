@@ -8,7 +8,7 @@ MODULE sortarr
       integer,intent(in) :: inputid(:)
       integer,intent(out) :: outputid(:)
 
-      integer, parameter :: num_points = 4
+      integer :: num_points
       real(kind=8) :: input_point(2)
       real(kind=8) :: output_point(2)
       real(kind=8),allocatable :: output_points(:,:)
@@ -18,6 +18,7 @@ MODULE sortarr
       logical :: yesno
       integer :: temp
 
+      num_points = size(A,2)
       !allocate(outputid(num_points))
       allocate(output_points(num_points,2))
      

@@ -33,6 +33,7 @@ def docontour(x,y,z_water, z_land, plot_title, vmin, vmax, colorbar=True, savefi
         cbar.ax.set_ylabel("WSE")
 
     if savefile is not None:
+        print "Saving ",savefile
         plt.savefig(savefile)
 
     plt.close()

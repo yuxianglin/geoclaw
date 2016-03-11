@@ -24,10 +24,6 @@ c
       integer clock_start, clock_finish, clock_rate
  
 #ifdef USE_PDAF
-      !type ensstate
-      !    integer :: ens_number
-      !    REAL(KIND=8), DIMENSION(2, nx1, ny1) :: mom = 0.0d0
-      !end type ensstate
 
       EXTERNAL :: next_observation_pdaf, 
      & ! Provide time step, model time and dimension of next observation
@@ -83,8 +79,8 @@ c
       type(ensstate) :: ens_num(dim_ens)
 #endif
 #ifndef USE_PDAF
-      integer,PARAMETER :: nx1 = 100
-      integer, PARAMETER :: ny1 = 100
+      integer,PARAMETER :: nx1 = 50
+      integer, PARAMETER :: ny1 = 50
       integer :: i1,i2,i_mod,j_mod
       integer, allocatable :: mptr_array(:)
       integer, allocatable :: ordered_mptr_array(:)
@@ -168,6 +164,7 @@ c        if this is a restart, make sure chkpt times start after restart time
  5     continue
 
 #ifndef USE_PDAF
+         print *,"numgrids = ",numgrids(1)
          !-------------------
          !Get the order of mptr 
          !-------------------
@@ -248,7 +245,7 @@ c        if this is a restart, make sure chkpt times start after restart time
                         ! Extract depth and momenta
                         i_mod = i_pkj-nghost
                         j_mod = j_pkj - nghost
-                        print *,i_mod,j_mod
+                        !print *,i_mod,j_mod
 !                        alloc(iadd(1,i_pkj,j_pkj)) = 
 !     .                            field(i_mod+nx*(j_mod-1)) 
 !     .                    - alloc(iaddaux(1,i_pkj, j_pkj))
@@ -292,7 +289,6 @@ c        if this is a restart, make sure chkpt times start after restart time
 ! 82         level = level +1
 !             go to 65
 ! 91          continue 
-
 #endif
 
 #ifdef USE_PDAF
@@ -413,7 +409,6 @@ c        if this is a restart, make sure chkpt times start after restart time
                         ! Extract depth and momenta
                         i_mod = i_pkj-nghost
                         j_mod = j_pkj - nghost
-                        print *,i_mod,j_mod
 !                        alloc(iadd(1,i_pkj,j_pkj)) = 
 !     .                            field(i_mod+nx*(j_mod-1)) 
 !     .                    - alloc(iaddaux(1,i_pkj, j_pkj))
@@ -424,79 +419,12 @@ c        if this is a restart, make sure chkpt times start after restart time
      .   ens_num(dim_counter + 1)%mom(1, (i2-1)*Ntot+i_mod+nx*(j_mod-1))
                     alloc(iadd(3,i_pkj, j_pkj)) = 
      .   ens_num(dim_counter + 1)%mom(2, (i2-1)*Ntot+i_mod+nx*(j_mod-1))
-!                        alloc(iadd(2,i_pkj, j_pkj)) = 
-!     .               ens_num(dim_counter + 1)%mom(1, i_mod+nx*(j_mod-1))
-!                        alloc(iadd(3,i_pkj, j_pkj)) = 
-!     .             ens_num(dim_counter + 1)%mom(2, i_mod + nx*(j_mod-1))
-!!                        alloc(iadd(2,i_pkj, j_pkj)) = 
-!!     .                    ens_num(dim_counter + 1)%mom(1, i_mod,j_mod)
-!!                        alloc(iadd(3,i_pkj, j_pkj)) = 
-!!     .                    ens_num(dim_counter + 1)%mom(2, i_mod,j_mod)
-                  !   endif
-                        
-                  !      if (alloc(iadd(1,i_pkj,j_pkj)) < 0.d0) then
-                  !              alloc(iadd(1,i_pkj,j_pkj)) = 0.d0
-                  !      endif
-                  
-                  !        do ivar=1,nvar
-                  !if (abs(alloc(iadd(ivar,i_pkj,j_pkj))) < 1d-90) then
-                  !                alloc(iadd(ivar,i_pkj,j_pkj)) = 0.d0
-                  !            endif
-                  !        enddo
-                        !h_pkj = alloc(iadd(1,i_pkj,j_pkj)) 
-                        !hu_pkj = alloc(iadd(2,i_pkj,j_pkj))
-                        !hv_pkj = alloc(iadd(3,i_pkj,j_pkj))
-                        !eta_pkj = h_pkj + alloc(iaddaux(1,i_pkj,j_pkj))
-                        !print *,field(i_pkj, j_pkj)
-                        
-                        !if (abs(eta_pkj) < 1d-90) then
-                        !   eta_pkj = 0.d0
-                        !end if
-
-                        !print *,h_pkj, hu_pkj, hv_pkj, eta_pkj
-               !         print *,alloc(iadd(1,i_pkj,j_pkj)), 
-     .         !                 alloc(iadd(2,i_pkj,j_pkj)),
-     .         !                 alloc(iadd(3,i_pkj,j_pkj)),  
-     .         !                 alloc(iaddaux(1,i_pkj,j_pkj))
                      enddo
                   enddo
              enddo
-             print *,"field = ",field
          deallocate(mptr_array)
          deallocate(ordered_mptr_array)
          deallocate(corner_array)
-!                  ! Got from valout.F
-!                  ! Modify the total height (alloc(iadd(1,i,j))) based on the field obtained from
-!                  nx = node(ndihi,mptr1) - node(ndilo, mptr1) + 1
-!                  ny = node(ndjhi,mptr1) - node(ndjlo, mptr1) + 1
-!                  ! PDAF_get_state
-!                  mitot   = nx + 2*nghost
-!                  mjtot   = ny + 2*nghost
-!                  loc     = node(store1, 1)
-!                  locaux  = node(storeaux,1)
-!                  print *,nvar, nghost, mjtot
-!                  
-!                  do j_pkj = nghost+1, mjtot-nghost
-!                      do i_pkj = nghost+1, mitot-nghost
-!                  !        do ivar=1,nvar
-!                  !if (abs(alloc(iadd(ivar,i_pkj,j_pkj))) < 1d-90) then
-!                  !                alloc(iadd(ivar,i_pkj,j_pkj)) = 0.d0
-!                  !            endif
-!                  !        enddo
-!                        ! Extract depth and momenta
-!                        
-!                        alloc(iadd(1,i_pkj,j_pkj)) = 
-!     .                            field(i_pkj-nghost,j_pkj-nghost) 
-!     .                            - alloc(iaddaux(1,i_pkj, j_pkj))
-!                        alloc(iadd(2,i_pkj, j_pkj)) = 
-!     .                    ens_num(dim_counter + 1)%mom(1, i_pkj-nghost,
-!     .                    j_pkj-nghost)
-!                        alloc(iadd(3,i_pkj, j_pkj)) = 
-!     .                    ens_num(dim_counter + 1)%mom(2, i_pkj-nghost,
-!     .                    j_pkj-nghost)
-!                        
-!                     enddo
-!                  enddo
 
 
                   !Advance pdaf_nsteps of forward model 
@@ -845,7 +773,7 @@ c             ! use same alg. as when setting refinement when first make new fin
                   ! alloc(iadd(1,i,j)) to modify.
                   ! eta = h + topo
 
-                  print *,"forecasted field for ", dim_counter+1
+                  print *,"Done forecasting for ens_num", dim_counter+1
 
 
 
@@ -907,7 +835,6 @@ c             ! use same alg. as when setting refinement when first make new fin
                         ! Extract depth and momenta
                         i_mod = i_pkj-nghost
                         j_mod = j_pkj - nghost
-                        print *,i_mod,j_mod
                         field((i2-1)*Ntot+i_mod+nx*(j_mod-1)) = 
      .      alloc(iadd(1,i_pkj,j_pkj)) + alloc(iaddaux(1,i_pkj, j_pkj))
          ens_num(dim_counter + 1)%mom(1,(i2-1)*Ntot+i_mod+nx*(j_mod-1))=
@@ -915,39 +842,6 @@ c             ! use same alg. as when setting refinement when first make new fin
 
          ens_num(dim_counter + 1)%mom(2,(i2-1)*Ntot+i_mod+nx*(j_mod-1))=
      .                  alloc(iadd(3,i_pkj, j_pkj)) 
-!                        field(i_mod+nx*(j_mod-1)) = 
-!     .      alloc(iadd(1,i_pkj,j_pkj)) + alloc(iaddaux(1,i_pkj, j_pkj))
-!                    ens_num(dim_counter + 1)%mom(1, i_mod+nx*(j_mod-1))=
-!     .                      alloc(iadd(2,i_pkj, j_pkj))
-!
-!                    ens_num(dim_counter + 1)%mom(2, i_mod+nx*(j_mod-1))=
-!     .                  alloc(iadd(3,i_pkj, j_pkj)) 
-!                  !   endif
-!                        
-!                  !      if (alloc(iadd(1,i_pkj,j_pkj)) < 0.d0) then
-!                  !              alloc(iadd(1,i_pkj,j_pkj)) = 0.d0
-!                  !      endif
-!                  
-!                  !        do ivar=1,nvar
-!                  !if (abs(alloc(iadd(ivar,i_pkj,j_pkj))) < 1d-90) then
-!                  !                alloc(iadd(ivar,i_pkj,j_pkj)) = 0.d0
-!                  !            endif
-!                  !        enddo
-!                        !h_pkj = alloc(iadd(1,i_pkj,j_pkj)) 
-!                        !hu_pkj = alloc(iadd(2,i_pkj,j_pkj))
-!                        !hv_pkj = alloc(iadd(3,i_pkj,j_pkj))
-!                        !eta_pkj = h_pkj + alloc(iaddaux(1,i_pkj,j_pkj))
-!                        !print *,field(i_pkj, j_pkj)
-!                        
-!                        !if (abs(eta_pkj) < 1d-90) then
-!                        !   eta_pkj = 0.d0
-!                        !end if
-
-!                        !print *,h_pkj, hu_pkj, hv_pkj, eta_pkj
-!               !         print *,alloc(iadd(1,i_pkj,j_pkj)), 
-!     .         !                 alloc(iadd(2,i_pkj,j_pkj)),
-!     .         !                 alloc(iadd(3,i_pkj,j_pkj)),  
-!     .         !                 alloc(iaddaux(1,i_pkj,j_pkj))
                      enddo
                   enddo
              enddo
@@ -958,53 +852,9 @@ c             ! use same alg. as when setting refinement when first make new fin
 
 
 
-
-
-
-
-
-!                  do j_pkj = nghost+1, mjtot-nghost
-!                      do i_pkj = nghost+1, mitot-nghost
-!                          !do ivar=1,nvar
-!                  !if (abs(alloc(iadd(ivar,i_pkj,j_pkj))) < 1d-90) then
-!                  !                alloc(iadd(ivar,i_pkj,j_pkj)) = 0.d0
-!                  !           endif
-!                  !       enddo
-!                        ! Extract depth and momenta
-!                  !      h_pkj = alloc(iadd(1,i_pkj,j_pkj)) 
-!                  !      hu_pkj = alloc(iadd(2,i_pkj,j_pkj))
-!                  !      hv_pkj = alloc(iadd(3,i_pkj,j_pkj))
-!                  !      eta_pkj = h_pkj + alloc(iaddaux(1,i_pkj,j_pkj))
-!                        
-!                       field(i_pkj-nghost,j_pkj-nghost) =
-!     .       alloc(iadd(1,i_pkj,j_pkj)) + alloc(iaddaux(1,i_pkj, j_pkj))
-!                       ens_num(dim_counter + 1)%mom(1, i_pkj-nghost,
-!     .                    j_pkj-nghost) = alloc(iadd(2,i_pkj, j_pkj))
-!                       ens_num(dim_counter + 1)%mom(2, i_pkj-nghost,
-!     .                    j_pkj-nghost) = alloc(iadd(3,i_pkj,j_pkj))
-!                        !print *,field(i_pkj-nghost, j_pkj-nghost)
-!                        
-!                        !if (abs(eta_pkj) < 1d-90) then
-!                        !   eta_pkj = 0.d0
-!                        !end if
-!
-!                        !print *,h_pkj, hu_pkj, hv_pkj, eta_pkj
-!                     enddo
-!                     !print *,' '
-!                  enddo
-!                  !print *,'field2 = ', field
-!
-
               ! *** PDAF: Send State forecast to filter;
               ! *** PDAF: Perform assimilation if ensemble forecast is completed
               ! field is the eta here. Check collect_state
-
-
-
-
-
-
-
 
               CALL PDAF_put_state_enkf(collect_state_pdaf, 
      &             init_dim_obs_pdaf, obs_op_pdaf, init_obs_pdaf, 

@@ -49,8 +49,6 @@ SUBROUTINE init_ens(filtertype, dim_p, dim_ens, state_p, Uinv, &
 
 ! *** local variables ***
   INTEGER :: i, j, member  ! Counters
-  integer :: nx1 = 50
-  integer :: ny1 = 50
   INTEGER, SAVE :: allocflag = 0      ! Flag for memory counting
   REAL, ALLOCATABLE :: field(:)     ! global model field
   CHARACTER(len=2) :: ensstr          ! String for ensemble member
@@ -76,12 +74,14 @@ SUBROUTINE init_ens(filtertype, dim_p, dim_ens, state_p, Uinv, &
   DO member = 1, dim_ens
      WRITE (ensstr, '(i2)') member
      OPEN(24, file = '../ens_'//TRIM(ADJUSTL(ensstr))//'.txt', status='old')
-     do i=1,4
-         !do j =1,nx*ny
-         do j = 1,nx1*ny1
-             read(24,*) field((i-1)*nx1*ny1 + j)
-         enddo
-     enddo
+     !do i=1,4
+     !    !do j =1,nx*ny
+     !    do j = 1,nx1*ny1
+     !        read(24,*) field((i-1)*nx1*ny1 + j)
+     !    enddo
+     !enddo
+     read(24,*)field
+     print *,field
      CLOSE(24)
      ens_p(:,member) = field(:)
      !DO i = 1, ny

@@ -5,6 +5,7 @@ from inputs_online import create_mask
 from inputs_online import run_geoclaw
 from inputs_online import make_init_ens
 from inputs_online import error_analysis
+from inputs_online import chunk
 
 if __name__ == "__main__":
     
@@ -15,13 +16,13 @@ if __name__ == "__main__":
     #3. Move the output to _output_original_hump. This output will serve as observation values for assimilation
     #------------------------------------------------------#
     
-    nx = 50
-    ny = 50
-    xlower = -98.0
-    xupper = 98.0
-    ylower = -98.0
-    yupper = 98.0
-    num_ens = 2
+    nx = 100
+    ny = 100
+    xlower = -99.0
+    xupper = 99.0
+    ylower = -99.0
+    yupper = 99.0
+    num_ens = 9
     ictype = "hump"
     total_steps = 200
     output_step_interval = 20
@@ -35,17 +36,23 @@ if __name__ == "__main__":
     xv,yv = np.meshgrid(X,Y)
    
     #Make initial ensemble
-    #make_init_ens.makeinitens2(xv, yv, num_ens)
-    make_init_ens.makeinitens(xv, yv, num_ens,ictype)
+    make_init_ens.makeinitens2(xv, yv, num_ens,ictype = ictype)
+    #make_init_ens.makeinitens(xv, yv, num_ens,ictype=ictype)
+    if ((nx > 50) & (ny > 50)):
+        chunk.chunk_write(range(1,num_ens),type1="init")
    
     #Make observations
-    xobs_start = 25 
-    yobs_start = 25
-    xobs_end = 35
-    yobs_end = 35
-    nxobs = 5
-    nyobs = 5
+    #if num_ens != 1:
+    xobs_start = 20 
+    yobs_start = 20
+    xobs_end = 80
+    yobs_end = 80
+    nxobs = 60
+    nyobs = 60
     make_obs.make_obs(xv, yv, obs_time_list, xobs_start, yobs_start, xobs_end, yobs_end, nxobs, nyobs, ictype)
+        #make_obs.make_obs_testing(xv, yv, obs_time_list, xobs_start, yobs_start, xobs_end, yobs_end, nxobs, nyobs, ictype)
+    if ((nx > 50) & (ny > 50)):
+        chunk.chunk_write(obs_time_list,type1="obs")
 
     #------------------------------------------------------#
     #Follow these instructions to run assimilation version of GeoCLAW
