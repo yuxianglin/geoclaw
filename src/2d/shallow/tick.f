@@ -74,7 +74,8 @@ c
       !integer nsteps1 = 73
       type ensstate
           integer :: ens_number
-          REAL(KIND=8), DIMENSION(2, nx1*ny1) :: mom = 0.0d0
+          !REAL(KIND=8), DIMENSION(2, nx1*ny1) :: mom = 0.0d0
+          REAL(KIND=8), ALLOCATABLE :: mom(:,:)
       end type ensstate
       type(ensstate) :: ens_num(dim_ens)
 #endif
@@ -170,10 +171,11 @@ c        if this is a restart, make sure chkpt times start after restart time
          !-------------------
          mptr = lstart(1)
          !if (mptr .eq. 0) go to 89
-         corner_counter = 0
-89         mptr = node(levelptr, mptr)
-         corner_counter = corner_counter + 1
-         if (mptr .ne. 0) go to 89
+!         corner_counter = 0
+!89         mptr = node(levelptr, mptr)
+!         corner_counter = corner_counter + 1
+!         if (mptr .ne. 0) go to 89
+         corner_counter = numgrids(1)
          print *,"num of corners",corner_counter
 
          allocate(mptr_array(corner_counter))
@@ -293,9 +295,12 @@ c        if this is a restart, make sure chkpt times start after restart time
 
 #ifdef USE_PDAF
       dim_counter = 0
-      !DO i_pkj=1,dim_ens
-      !    ens_num(i_pkj)%mom(:,:,:) = 0.0d0
-      !enddo
+
+      DO i_pkj=1,dim_ens
+          ALLOCATE(ens_num(i_pkj)%mom(2,numcells(1)))
+          ens_num(i_pkj)%mom(:,:) = 0.0d0
+      enddo
+
       print *, "Number of ensemble members is ",dim_ens
       
       !Start of the model loop. This loop runs from 1:num_ens
