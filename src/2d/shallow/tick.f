@@ -89,7 +89,6 @@ c
       real(kind=8),allocatable :: corner_array(:,:)
       integer fieldval, corner_counter
       real(kind=8) :: ximc,xim,x,xip,xipc,yjmc,yjm,y,yjp,yjpc,dq
-      !REAL(KIND=8), DIMENSION(nx1,ny1) :: field = 0.0d0
       REAL(KIND=8) :: field(nx1*ny1) = 0.0d0
       iadd(ivar,i,j)  = loc + ivar - 1 + nvar*((j-1)* mitot+i-1)
       iaddaux(iaux,i,j) = locaux + iaux-1 + naux*(i-1) +
@@ -169,7 +168,7 @@ c        if this is a restart, make sure chkpt times start after restart time
          !-------------------
          !Get the order of mptr 
          !-------------------
-         mptr = lstart(1)
+!         mptr = lstart(1)
          !if (mptr .eq. 0) go to 89
 !         corner_counter = 0
 !89         mptr = node(levelptr, mptr)
@@ -358,13 +357,13 @@ c        if this is a restart, make sure chkpt times start after restart time
          !-------------------
          !Get the order of mptr 
          !-------------------
-         mptr = lstart(1)
+!         mptr = lstart(1)
          !if (mptr .eq. 0) go to 89
-         corner_counter = 0
+         corner_counter = numgrids(1)
 
-93       mptr = node(levelptr, mptr)
-         corner_counter = corner_counter + 1
-         if (mptr .ne. 0) go to 93
+!93       mptr = node(levelptr, mptr)
+!         corner_counter = corner_counter + 1
+!         if (mptr .ne. 0) go to 93
 
          print *,"num of corners",corner_counter
 
@@ -398,7 +397,7 @@ c        if this is a restart, make sure chkpt times start after restart time
                   locaux  = node(storeaux,mptr1)
                   
                   print *,"loc=",loc
-                  print *,"mptr1=",mptr1
+                  print *,"mptr1 1=",mptr1
                   print *, "nx = ",nx
                   print *, "ny = ",ny
                   print *, "corners = ",corn1,corn2
@@ -786,13 +785,13 @@ c             ! use same alg. as when setting refinement when first make new fin
          !-------------------
          !Get the order of mptr 
          !-------------------
-         mptr = lstart(1)
+!         mptr = lstart(1)
          !if (mptr .eq. 0) go to 89
-         corner_counter = 0
-94         mptr = node(levelptr, mptr)
-         corner_counter = corner_counter + 1
-         if (mptr .ne. 0) go to 94
-         print *,"num of corners",corner_counter
+!         corner_counter = 0
+!94         mptr = node(levelptr, mptr)
+!         corner_counter = corner_counter + 1
+!         if (mptr .ne. 0) go to 94
+!         print *,"num of corners",corner_counter
 
          allocate(mptr_array(corner_counter))
          allocate(ordered_mptr_array(corner_counter))
@@ -824,7 +823,7 @@ c             ! use same alg. as when setting refinement when first make new fin
                   locaux  = node(storeaux,mptr1)
                   Ntot = nx*ny 
                   print *,"loc=",loc
-                  print *,"mptr1=",mptr1
+                  print *,"mptr1 2=",mptr1
                   print *, "nx = ",nx
                   print *, "ny = ",ny
                   print *, "corners = ",corn1,corn2
@@ -903,13 +902,13 @@ c             ! use same alg. as when setting refinement when first make new fin
          !-------------------
          !Get the order of mptr 
          !-------------------
-         mptr = lstart(1)
+!         mptr = lstart(1)
          !if (mptr .eq. 0) go to 89
-         corner_counter = 0
-95         mptr = node(levelptr, mptr)
-         corner_counter = corner_counter + 1
-         if (mptr .ne. 0) go to 95
-         print *,"num of corners",corner_counter
+!         corner_counter = 0
+!95         mptr = node(levelptr, mptr)
+!         corner_counter = corner_counter + 1
+!         if (mptr .ne. 0) go to 95
+!         print *,"num of corners",corner_counter
 
          allocate(mptr_array(corner_counter))
          allocate(ordered_mptr_array(corner_counter))

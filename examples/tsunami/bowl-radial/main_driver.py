@@ -22,7 +22,7 @@ if __name__ == "__main__":
     xupper = 99.0
     ylower = -99.0
     yupper = 99.0
-    num_ens = 9
+    num_ens = 99
     ictype = "hump"
     total_steps = 200
     output_step_interval = 20
