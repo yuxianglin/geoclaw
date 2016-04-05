@@ -108,9 +108,9 @@ SUBROUTINE init_pdaf()
                    ! for the Gaussian distribution 
 
    read(22, "(i2)") dim_ens   ! Size of ensemble for all ensemble filters
+                              ! Number of EOFs to be used for SEEK
    close(22)
 
-                    ! Number of EOFs to be used for SEEK
   subtype = 0       ! subtype of filter: 
                     !   ESTKF:
                     !     (0) Standard form of ESTKF

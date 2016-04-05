@@ -14,7 +14,7 @@ c
 
 #ifdef USE_PDAF
       use mod_model, only: field
-      use mod_assimilation, only: dim_ens, filename
+      use mod_assimilation, only: dim_ens, filename, filtertype
 #endif
 
       implicit double precision (a-h,o-z)
@@ -25,7 +25,8 @@ c
  
 #ifdef USE_PDAF
 
-      EXTERNAL :: next_observation_pdaf, 
+      EXTERNAL :: prodRinvA_pdaf,
+     &             next_observation_pdaf, 
      & ! Provide time step, model time and dimension of next observation
      &            distribute_state_pdaf, 
      & ! Routine to distribute a state vector to model fields
@@ -868,12 +869,18 @@ c             ! use same alg. as when setting refinement when first make new fin
                   CALL PDAF_put_state_seik(collect_state_pdaf, 
      &             init_dim_obs_pdaf, obs_op_pdaf, init_obs_pdaf, 
      &             prepoststep_ens_pdaf, prodRinvA_pdaf, 
-     &             init_obscovar_pdaf, status_pdaf)
+     &             init_obsvar_pdaf, status_pdaf)
+              else if (filtertype==0) then
+                  CALL PDAF_put_state_seek(collect_state_pdaf, 
+     &             init_dim_obs_pdaf, obs_op_pdaf, init_obs_pdaf, 
+     &             prepoststep_ens_pdaf, prodRinvA_pdaf, status_pdaf)
               else
                       print *,"nothing"
               endif
               
               dim_counter = dim_counter + 1
+
+              !init_obsvar_pdaf, status_pdaf)
 
               ! After assimilation step, alloc(iadd()) must contain assimilated
               ! value for appropriate valout

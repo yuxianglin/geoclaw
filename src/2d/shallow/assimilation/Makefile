@@ -124,7 +124,7 @@ libpdaf-d.a:
 	@echo "++++++ Generate Filter library ++++++"
 	@cd $(BASEDIR)/src; make;
 
-libonline: libpdaf-d.a $(MODULES) $(OBJ_MPI) $(MOD_ASSIM) $(OBJ_PDAF_INT) $(OBJ_USER_GEN) $(OBJ_USER_ENKF)
+libonline: libpdaf-d.a $(MODULES) $(OBJ_MPI) $(MOD_ASSIM) $(OBJ_PDAF_INT) $(OBJ_USER_GEN) $(OBJ_USER_ENKF) $(OBJ_USER_SEIK)
 	@echo "++++++ Generate assimilation library ++++++"
 	@cp $(BASEDIR)/lib/libpdaf-d.a .
 	@ar r $^
