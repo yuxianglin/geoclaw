@@ -28,6 +28,7 @@ if __name__ == "__main__":
     output_step_interval = 20
     delt_obs = output_step_interval
     rms_obs = 0.0000001
+    filtertype = 1
     
     obs_time_list = np.linspace(output_step_interval, total_steps,total_steps/output_step_interval, dtype='int32')
     num_time_steps = total_steps/output_step_interval + 1
@@ -63,6 +64,7 @@ if __name__ == "__main__":
     #5. Proceed to error analysis
     #------------------------------------------------------#
     run_geoclaw.run_geoclaw("../xgeoclaw",\
+            filtertype=filtertype, \
             num_ens=num_ens, \
             rms_obs=rms_obs,\
             delt_obs=delt_obs,\

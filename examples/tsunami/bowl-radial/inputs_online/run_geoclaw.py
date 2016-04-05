@@ -3,7 +3,7 @@ import subprocess
 import os
 
 
-def run_geoclaw(geoclaw_exec, num_ens = 9, rms_obs = 0.01, delt_obs = 10, output_step_interval=10, total_steps=200):
+def run_geoclaw(geoclaw_exec, filtertype = 2, num_ens = 9, rms_obs = 0.01, delt_obs = 10, output_step_interval=10, total_steps=200):
 
     subprocess.call(["make","clean"])
     subprocess.call(["make","clobber"])
@@ -19,6 +19,7 @@ def run_geoclaw(geoclaw_exec, num_ens = 9, rms_obs = 0.01, delt_obs = 10, output
     # hello.rundata.topo_data.topofiles[-1]=[2, 1, 1, 0., 1.e10, topo_path]
     #hello.rundata.clawdata.num_output_times = output_times
     #hello.rundata.amrdata.amr_levels_max = max_amr
+    hello.rundata.pdaf_data.filtertype = filtertype
     hello.rundata.pdaf_data.num_ensembles = num_ens
     hello.rundata.pdaf_data.rms_obs = rms_obs
     hello.rundata.pdaf_data.delt_obs = delt_obs

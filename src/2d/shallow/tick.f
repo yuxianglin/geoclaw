@@ -859,11 +859,19 @@ c             ! use same alg. as when setting refinement when first make new fin
               ! *** PDAF: Send State forecast to filter;
               ! *** PDAF: Perform assimilation if ensemble forecast is completed
               ! field is the eta here. Check collect_state
-
-              CALL PDAF_put_state_enkf(collect_state_pdaf, 
+              if (filtertype==2) then
+                  CALL PDAF_put_state_enkf(collect_state_pdaf, 
      &             init_dim_obs_pdaf, obs_op_pdaf, init_obs_pdaf, 
      &             prepoststep_ens_pdaf, add_obs_error_pdaf, 
      &             init_obscovar_pdaf, status_pdaf)
+              else if (filtertype==1) then
+                  CALL PDAF_put_state_seik(collect_state_pdaf, 
+     &             init_dim_obs_pdaf, obs_op_pdaf, init_obs_pdaf, 
+     &             prepoststep_ens_pdaf, prodRinvA_pdaf, 
+     &             init_obscovar_pdaf, status_pdaf)
+              else
+                      print *,"nothing"
+              endif
               
               dim_counter = dim_counter + 1
 

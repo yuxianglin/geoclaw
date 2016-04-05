@@ -84,7 +84,15 @@ SUBROUTINE init_pdaf()
 
 
 ! *** Filter specific variables
-  filtertype = 2    ! Type of filter
+
+   inquire(FILE=filename_pdaf, EXIST=there)
+   if (there) then
+      call opendatafile(22, filename_pdaf)
+   endif
+! *** Forecast length (time interval between analysis steps) ***
+   !filtertype = 2    ! Type of filter
+   read(22,"(i1)") filtertype 
+                    !   (0) SEEK
                     !   (1) SEIK
                     !   (2) EnKF
                     !   (3) LSEIK
@@ -92,12 +100,6 @@ SUBROUTINE init_pdaf()
                     !   (5) LETKF
                     !   (6) ESTKF
                     !   (7) LESTKF
-
-   inquire(FILE=filename_pdaf, EXIST=there)
-   if (there) then
-      call opendatafile(22, filename_pdaf)
-   endif
-! *** Forecast length (time interval between analysis steps) ***
    read(22, "(i2)") delt_obs   ! Number of time steps between analysis/assimilation steps
 
 ! *** specifications for observations ***
