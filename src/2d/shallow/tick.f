@@ -874,6 +874,11 @@ c             ! use same alg. as when setting refinement when first make new fin
                   CALL PDAF_put_state_seek(collect_state_pdaf, 
      &             init_dim_obs_pdaf, obs_op_pdaf, init_obs_pdaf, 
      &             prepoststep_ens_pdaf, prodRinvA_pdaf, status_pdaf)
+              else if (filtertype==6) then
+                  CALL PDAF_put_state_estkf(collect_state_pdaf, 
+     &             init_dim_obs_pdaf, obs_op_pdaf, init_obs_pdaf, 
+     &             prepoststep_ens_pdaf, prodRinvA_pdaf, 
+     &             init_obsvar_pdaf, status_pdaf)
               else
                       print *,"nothing"
               endif
