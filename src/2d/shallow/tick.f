@@ -6,6 +6,7 @@ c
 c
       use geoclaw_module
       use sortarr
+      use mapdomain
       use refinement_module, only: varRefTime
       use amr_module
       use topo_module, only: dt_max_dtopo, num_dtopo, topo_finalized,
@@ -65,9 +66,12 @@ c
       integer, allocatable :: ordered_mptr_array(:)
       integer :: Ntot
       real(kind=8),allocatable :: corner_array(:,:)
+      real(kind=8), allocatable :: sample_array(:,:)
       integer fieldval, corner_counter
 
+      mapping_func(i,j) = j + (i-1)*(mitot - 2*nghost)
       iadd(ivar,i,j)  = loc + ivar - 1 + nvar*((j-1)* mitot+i-1)
+     
       iaddaux(iaux,i,j) = locaux + iaux-1 + naux*(i-1) +
      .                                      naux*mitot*(j-1)
 
@@ -169,30 +173,25 @@ c        if this is a restart, make sure chkpt times start after restart time
          !-------------------
          !Get the order of mptr 
          !-------------------
-!         mptr = lstart(1)
-         !if (mptr .eq. 0) go to 89
-!         corner_counter = 0
-!89         mptr = node(levelptr, mptr)
-!         corner_counter = corner_counter + 1
-!         if (mptr .ne. 0) go to 89
          corner_counter = numgrids(1)
          print *,"num of corners",corner_counter
 
-         allocate(mptr_array(corner_counter))
-         allocate(ordered_mptr_array(corner_counter))
-         allocate(corner_array(corner_counter,2))
-         
-         mptr = lstart(1)
-         do i_pkj =1,corner_counter
-             mptr_array(i_pkj) = mptr    
-             corner_array(i_pkj,1) = rnode(cornxlo,mptr)
-             corner_array(i_pkj,2) = rnode(cornylo,mptr)
-             mptr = node(levelptr, mptr)
-         enddo
-         print *,"mptr_array = ", mptr_array
-      print *,"corner array = ",(corner_array(i1,:),i1=1,corner_counter)
-         
-      call set_global(corner_array,mptr_array,ordered_mptr_array)
+!         allocate(mptr_array(corner_counter))
+!         allocate(ordered_mptr_array(corner_counter))
+!         allocate(corner_array(corner_counter,2))
+!         
+!         mptr = lstart(1)
+!         do i_pkj =1,corner_counter
+!             mptr_array(i_pkj) = mptr    
+!             corner_array(i_pkj,1) = rnode(cornxlo,mptr)
+!             corner_array(i_pkj,2) = rnode(cornylo,mptr)
+!             mptr = node(levelptr, mptr)
+!         enddo
+!         print *,"mptr_array = ", mptr_array
+!      print *,"corner array = ",(corner_array(i1,:),i1=1,corner_counter)
+!         
+!      call set_global(corner_array,mptr_array,ordered_mptr_array)
+       call get_ordered_array(mptr_array,ordered_mptr_array)
 
 
           OPEN(24,file="../ens_1.txt", STATUS="old")
@@ -358,31 +357,40 @@ c        if this is a restart, make sure chkpt times start after restart time
          !-------------------
          !Get the order of mptr 
          !-------------------
-!         mptr = lstart(1)
-         !if (mptr .eq. 0) go to 89
          corner_counter = numgrids(1)
 
-!93       mptr = node(levelptr, mptr)
-!         corner_counter = corner_counter + 1
-!         if (mptr .ne. 0) go to 93
 
          print *,"num of corners",corner_counter
 
-         allocate(mptr_array(corner_counter))
-         allocate(ordered_mptr_array(corner_counter))
-         allocate(corner_array(corner_counter,2))
-         
-         mptr = lstart(1)
-         do i_pkj =1,corner_counter
-             mptr_array(i_pkj) = mptr    
-             corner_array(i_pkj,1) = rnode(cornxlo,mptr)
-             corner_array(i_pkj,2) = rnode(cornylo,mptr)
-             mptr = node(levelptr, mptr)
-         enddo
-         print *,"mptr_array = ", mptr_array
-      print *,"corner array = ",(corner_array(i1,:),i1=1,corner_counter)
-         
-      call set_global(corner_array,mptr_array,ordered_mptr_array)
+!         allocate(mptr_array(corner_counter))
+!         allocate(ordered_mptr_array(corner_counter))
+!         allocate(corner_array(corner_counter,2))
+!         
+!         mptr = lstart(1)
+!         do i_pkj =1,corner_counter
+!             mptr_array(i_pkj) = mptr    
+!             corner_array(i_pkj,1) = rnode(cornxlo,mptr)
+!             corner_array(i_pkj,2) = rnode(cornylo,mptr)
+!             mptr = node(levelptr, mptr)
+!         enddo
+!         print *,"mptr_array = ", mptr_array
+!      print *,"corner array = ",(corner_array(i1,:),i1=1,corner_counter)
+!         
+!      call set_global(corner_array,mptr_array,ordered_mptr_array)
+      call get_ordered_array(mptr_array,ordered_mptr_array)
+      
+      allocate(sample_array(100,100))
+      open(unit=23,file="../inputs_online/masked_topo.txt")
+      do i_pkj=1,100
+      read(23,*) sample_array(i_pkj,:)
+      print *,i_pkj
+      end do
+      close(23)
+      print *,sample_array(1,2)
+
+      call traverse_global(sample_array, ordered_mptr_array)
+      deallocate(sample_array)
+      
 
          mptr = lstart(1)
 ! 71      if (mptr .eq. 0) go to 91
@@ -429,7 +437,7 @@ c        if this is a restart, make sure chkpt times start after restart time
              enddo
          deallocate(mptr_array)
          deallocate(ordered_mptr_array)
-         deallocate(corner_array)
+!         deallocate(corner_array)
 
 
                   !Advance pdaf_nsteps of forward model 

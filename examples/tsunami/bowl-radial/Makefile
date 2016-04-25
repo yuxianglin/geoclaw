@@ -50,7 +50,8 @@ MODULES = \
  $(GEOLIB)/surge/constant_storm_module.f90 \
  $(GEOLIB)/surge/storm_module.f90 \
  $(GEOLIB)/friction_module.f90 \
- $(GEOLIB)/sortarr.f90
+ $(GEOLIB)/sortarr.f90 \
+ $(GEOLIB)/pkj_geoclaw/mapdomain.f90
 
 SOURCES = \
   $(GEOLIB)/setprob.f90 \

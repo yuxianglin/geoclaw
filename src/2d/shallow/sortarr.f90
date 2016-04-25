@@ -46,9 +46,14 @@ MODULE sortarr
           endif
       enddo
              
-      print *,"input array",(A(i,:),i=1,num_points)  
+      !print *,"input array",(A(i,:),i=1,num_points)  
+      do i=1,4
+      print *,"input array",(A(i,j),j=1,2)  
+      enddo
       print *,"input id",inputid
-      print *,"output array",(output_points(i,:),i=1,num_points)
+      do i=1,4
+      print *,"output array",(output_points(i,j),j=1,2)
+      enddo
       print *,"outputid", outputid
 
       !deallocate(outputid)

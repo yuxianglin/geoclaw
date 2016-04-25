@@ -14,6 +14,10 @@ def chunk_write(forlist,type1="init"):
             destfile = "obs_step"+str(i)+"_mod.txt"
             print "Saving obs_step = ", i
 
+        if type1=="testing":
+            srcfile = "masked_topo.txt"
+            destfile = "total_array2"
+
         copyfile(srcfile,destfile)
         z = np.loadtxt(srcfile)
 
@@ -32,3 +36,7 @@ def chunk_write(forlist,type1="init"):
 #        np.savetxt(f,chunk2,fmt='%12.10f')
 #        np.savetxt(f,chunk3,fmt='%12.10f')
 #        np.savetxt(f,chunk4,fmt='%12.10f')
+
+
+if __name__=="__main__":
+    chunk_write([1],type1="testing")
