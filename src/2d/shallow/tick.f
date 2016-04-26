@@ -69,7 +69,16 @@ c
       real(kind=8), allocatable :: sample_array(:,:)
       integer fieldval, corner_counter
 
-      mapping_func(i,j) = j + (i-1)*(mitot - 2*nghost)
+                real(kind=8), allocatable :: total_array(:)
+                integer, allocatable :: global_to_totalarray_map(:)
+                integer, allocatable :: ptr_location(:) !Pointer
+
+      counter_func(i,j) = j + (i-1)*100
+!      neighbors(i,j) = total_array(global_to_totalarray_map(counter_func
+!     .(i,j)))
+      neighbors(i,j) = global_to_totalarray_map(j + 
+     . (i-1)*100)
+      neighbors2(i,j) = total_array(neighbors(i,j))
       iadd(ivar,i,j)  = loc + ivar - 1 + nvar*((j-1)* mitot+i-1)
      
       iaddaux(iaux,i,j) = locaux + iaux-1 + naux*(i-1) +
@@ -380,15 +389,21 @@ c        if this is a restart, make sure chkpt times start after restart time
       call get_ordered_array(mptr_array,ordered_mptr_array)
       
       allocate(sample_array(100,100))
-      open(unit=23,file="../inputs_online/masked_topo.txt")
+      !open(unit=23,file="../inputs_online/masked_topo.txt")
+      open(unit=23,file="../yoyo.txt")
       do i_pkj=1,100
-      read(23,*) sample_array(i_pkj,:)
-      print *,i_pkj
+           read(23,*) sample_array(i_pkj,:)
+      !print *,i_pkj
       end do
       close(23)
-      print *,sample_array(1,2)
 
-      call traverse_global(sample_array, ordered_mptr_array)
+      call traverse_global(sample_array, ordered_mptr_array
+     &        , total_array,global_to_totalarray_map, ptr_location)
+
+      print *,"mik1 = ", total_array(global_to_totalarray_map(63 + 
+     . (51-1)*100))
+      print *,"mik2 = ", total_array(neighbors(51,63))
+      print *, "mik3 = ", sample_array(51,63)
       deallocate(sample_array)
       
 
