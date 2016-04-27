@@ -95,7 +95,7 @@ program amr2
     use fgmax_module, only: set_fgmax, FG_num_fgrids
 
 #ifdef USE_PDAF
-    use mod_model, only : nx,ny, field,total_steps, dtinit, time
+    use mod_model, only : nx,ny, field,total_steps, dtinit, time, num_grids
 #endif
 
     implicit none
@@ -603,6 +603,8 @@ program amr2
     !ALLOCATE(field(ny,nx))
     !ALLOCATE(field(ny,nx))
     ALLOCATE(field(ny*nx))
+    num_grids = numgrids(1)
+    print *,"Numgrids = ", num_grids
    
    ! ************************************
    ! *** Read initial field from file ***

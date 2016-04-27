@@ -27,4 +27,9 @@ MODULE mod_model
   REAL :: dtinit                  ! Time step size
   REAL :: time                    ! Model time
 
+  INTEGER :: num_grids
+  INTEGER, ALLOCATABLE :: nx_local(:)
+  INTEGER, ALLOCATABLE :: ny_local(:)
+  INTEGER :: numcells_pdaf
+
 END MODULE mod_model
