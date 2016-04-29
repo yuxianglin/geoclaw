@@ -404,6 +404,8 @@ c        if this is a restart, make sure chkpt times start after restart time
      . (51-1)*100))
       print *,"mik2 = ", total_array(neighbors(51,63))
       print *, "mik3 = ", sample_array(51,63)
+      print *,"2d to 1d is = ", neighbors(14,100), neighbors(59,45)
+     ., neighbors(65,20), neighbors(100,100)
       deallocate(sample_array)
       
 

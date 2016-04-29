@@ -31,5 +31,7 @@ MODULE mod_model
   INTEGER, ALLOCATABLE :: nx_local(:)
   INTEGER, ALLOCATABLE :: ny_local(:)
   INTEGER :: numcells_pdaf
+  REAL(KIND=8),ALLOCATABLE :: rnode_pdaf(:,:)
+  INTEGER,ALLOCATABLE :: node_pdaf(:,:)
 
 END MODULE mod_model

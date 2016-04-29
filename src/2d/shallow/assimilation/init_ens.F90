@@ -52,6 +52,9 @@ SUBROUTINE init_ens(filtertype, dim_p, dim_ens, state_p, Uinv, &
   INTEGER, SAVE :: allocflag = 0      ! Flag for memory counting
   REAL, ALLOCATABLE :: field(:)     ! global model field
   CHARACTER(len=2) :: ensstr          ! String for ensemble member
+  INTEGER :: index_2d_pdaf(2)
+  !INTEGER :: index_2d_row, index_2d_col
+  INTEGER :: index_1d_pdaf
 
 
 ! **********************
@@ -65,7 +68,7 @@ SUBROUTINE init_ens(filtertype, dim_p, dim_ens, state_p, Uinv, &
   
   ! allocate memory for temporary fields
   ALLOCATE(field(ny*nx))
- print *, nx, ny
+ !print *, nx, ny
 
 ! ********************************
 ! *** Read ensemble from files ***
@@ -80,8 +83,8 @@ SUBROUTINE init_ens(filtertype, dim_p, dim_ens, state_p, Uinv, &
      !        read(24,*) field((i-1)*nx1*ny1 + j)
      !    enddo
      !enddo
-     read(24,*)field
-     print *,field
+     !read(24,*)field
+     !print *,field
      CLOSE(24)
      ens_p(:,member) = field(:)
      !DO i = 1, ny
@@ -99,5 +102,24 @@ SUBROUTINE init_ens(filtertype, dim_p, dim_ens, state_p, Uinv, &
 ! ****************
 
   DEALLOCATE(field)
+
+  !Just testing printing
+  call oned_to_twod(3200,2,2,index_2d_pdaf)
+  print *, "2d domain is", index_2d_pdaf
+  call oned_to_twod(5445,2,2,index_2d_pdaf)
+  print *, "2d domain is", index_2d_pdaf
+  call oned_to_twod(5720,2,2,index_2d_pdaf)
+  print *, "2d domain is", index_2d_pdaf
+  call oned_to_twod(10000,2,2,index_2d_pdaf)
+  print *, "2d domain is", index_2d_pdaf
+
+  call twod_to_oned(14,100,index_1d_pdaf)
+  print *, "1d domain is", index_1d_pdaf
+  call twod_to_oned(59,45,index_1d_pdaf)
+  print *, "1d domain is", index_1d_pdaf
+  call twod_to_oned(65,20,index_1d_pdaf)
+  print *, "1d domain is", index_1d_pdaf
+  call twod_to_oned(100,100,index_1d_pdaf)
+  print *, "1d domain is", index_1d_pdaf
 
 END SUBROUTINE init_ens

@@ -95,7 +95,9 @@ program amr2
     use fgmax_module, only: set_fgmax, FG_num_fgrids
 
 #ifdef USE_PDAF
-    use mod_model, only : nx,ny, field,total_steps, dtinit, time, num_grids
+    use mod_model, only : nx,ny, field,total_steps, dtinit, time, &
+    num_grids, node_pdaf, rnode_pdaf
+    use amr_module, only: nsize, rsize, maxgr, node, rnode
 #endif
 
     implicit none
@@ -605,7 +607,12 @@ program amr2
     ALLOCATE(field(ny*nx))
     num_grids = numgrids(1)
     print *,"Numgrids = ", num_grids
-   
+    
+    print *,"rsize =", rsize
+    ALLOCATE(node_pdaf(nsize, maxgr))
+    ALLOCATE(rnode_pdaf(rsize, maxgr))
+    node_pdaf = node
+    rnode_pdaf = rnode
    ! ************************************
    ! *** Read initial field from file ***
    ! ************************************
@@ -631,6 +638,10 @@ program amr2
     call tick(nvar,cut,nstart,vtime,time,naux,t0,rest,dt_max)
     ! --------------------------------------------------------
 
+#ifdef USE_PDAF
+    DEALLOCATE(node_pdaf)
+    DEALLOCATE(rnode_pdaf)
+#endif
 
     ! Done with computation, cleanup:
 
