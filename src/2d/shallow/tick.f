@@ -44,6 +44,8 @@ c
      &             add_obs_error_pdaf, 
      & ! Initialize obs error covar R in EnKF
      &             init_obscovar_pdaf
+      
+      integer :: index_2d_pdaf(2)
 
       integer,PARAMETER :: nx1 = 100
       integer, PARAMETER :: ny1 = 100
@@ -406,6 +408,11 @@ c        if this is a restart, make sure chkpt times start after restart time
       print *, "mik3 = ", sample_array(51,63)
       print *,"2d to 1d is = ", neighbors(14,100), neighbors(59,45)
      ., neighbors(65,20), neighbors(100,100)
+      
+      print *,"yolo"
+      call oned_to_twod(3200,2,2,index_2d_pdaf)
+      print *, "2d domain is", index_2d_pdaf
+
       deallocate(sample_array)
       
 
