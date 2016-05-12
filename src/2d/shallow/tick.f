@@ -390,30 +390,30 @@ c        if this is a restart, make sure chkpt times start after restart time
 !      call set_global(corner_array,mptr_array,ordered_mptr_array)
       call get_ordered_array(mptr_array,ordered_mptr_array)
       
-      allocate(sample_array(100,100))
-      !open(unit=23,file="../inputs_online/masked_topo.txt")
-      open(unit=23,file="../yoyo.txt")
-      do i_pkj=1,100
-           read(23,*) sample_array(i_pkj,:)
-      !print *,i_pkj
-      end do
-      close(23)
+!      allocate(sample_array(100,100))
+!      !open(unit=23,file="../inputs_online/masked_topo.txt")
+!      open(unit=23,file="../yoyo.txt")
+!      do i_pkj=1,100
+!          read(23,*) sample_array(i_pkj,:)
+!      !print *,i_pkj
+!     end do
+!      close(23)
 
-      call traverse_global(sample_array, ordered_mptr_array
-     &        , total_array,global_to_totalarray_map, ptr_location)
-
-      print *,"mik1 = ", total_array(global_to_totalarray_map(63 + 
-     . (51-1)*100))
-      print *,"mik2 = ", total_array(neighbors(51,63))
-      print *, "mik3 = ", sample_array(51,63)
-      print *,"2d to 1d is = ", neighbors(14,100), neighbors(59,45)
-     ., neighbors(65,20), neighbors(100,100)
-      
-      print *,"yolo"
-      call oned_to_twod(3200,2,2,index_2d_pdaf)
-      print *, "2d domain is", index_2d_pdaf
-
-      deallocate(sample_array)
+!      call traverse_global(sample_array, ordered_mptr_array
+!     &        , total_array,global_to_totalarray_map, ptr_location)
+!
+!      print *,"mik1 = ", total_array(global_to_totalarray_map(63 + 
+!     . (51-1)*100))
+!      print *,"mik2 = ", total_array(neighbors(51,63))
+!      print *, "mik3 = ", sample_array(51,63)
+!      print *,"2d to 1d is = ", neighbors(14,100), neighbors(59,45)
+!     ., neighbors(65,20), neighbors(100,100)
+!      
+!      print *,"yolo"
+!      call oned_to_twod(3200,2,2,index_2d_pdaf)
+!      print *, "2d domain is", index_2d_pdaf
+!
+!      deallocate(sample_array)
       
 
          mptr = lstart(1)

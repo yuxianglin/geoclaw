@@ -91,7 +91,8 @@ OBJ_USER_DOMAIN = oned_to_twod.o \
 
 # Full list of user-supplied routines for online modes
 #OBJ_PDAF_USER = $(OBJ_USER_GEN) $(OBJ_USER_SEIK) $(OBJ_USER_ENKF) $(OBJ_USER_LOCAL)
-OBJ_PDAF_USER = $(OBJ_USER_DOMAIN) $(OBJ_USER_GEN) $(OBJ_USER_SEIK) $(OBJ_USER_ENKF) $(OBJ_USER_LOCAL)
+#OBJ_PDAF_USER = $(OBJ_USER_DOMAIN) $(OBJ_USER_GEN) $(OBJ_USER_SEIK) $(OBJ_USER_ENKF) $(OBJ_USER_LOCAL)
+OBJ_PDAF_USER = $(OBJ_USER_DOMAIN) $(OBJ_USER_GEN) $(OBJ_USER_SEIK) $(OBJ_USER_ENKF)
 
 ######################################################
 

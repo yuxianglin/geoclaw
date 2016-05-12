@@ -74,7 +74,7 @@ if __name__ == "__main__":
     xupper = 99.0
     ylower = -99.0
     yupper = 99.0
-    num_ens = 3
+    num_ens = 1
     ictype = "hump"
     ens_range = range(1,num_ens+1)
     obs_time_list = np.linspace(20,200,10,dtype='int32')
