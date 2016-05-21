@@ -826,21 +826,22 @@ c             ! use same alg. as when setting refinement when first make new fin
 !         if (mptr .ne. 0) go to 94
 !         print *,"num of corners",corner_counter
 
-         allocate(mptr_array(corner_counter))
-         allocate(ordered_mptr_array(corner_counter))
-         allocate(corner_array(corner_counter,2))
+!         allocate(mptr_array(corner_counter))
+!         allocate(ordered_mptr_array(corner_counter))
+!         allocate(corner_array(corner_counter,2))
+!         
+!         mptr = lstart(1)
+!         do i_pkj =1,corner_counter
+!             mptr_array(i_pkj) = mptr    
+!             corner_array(i_pkj,1) = rnode(cornxlo,mptr)
+!             corner_array(i_pkj,2) = rnode(cornylo,mptr)
+!             mptr = node(levelptr, mptr)
+!         enddo
+!         print *,"mptr_array = ", mptr_array
+!      print *,"corner array = ",(corner_array(i1,:),i1=1,corner_counter)
          
-         mptr = lstart(1)
-         do i_pkj =1,corner_counter
-             mptr_array(i_pkj) = mptr    
-             corner_array(i_pkj,1) = rnode(cornxlo,mptr)
-             corner_array(i_pkj,2) = rnode(cornylo,mptr)
-             mptr = node(levelptr, mptr)
-         enddo
-         print *,"mptr_array = ", mptr_array
-      print *,"corner array = ",(corner_array(i1,:),i1=1,corner_counter)
-         
-      call set_global(corner_array,mptr_array,ordered_mptr_array)
+!      call set_global(corner_array,mptr_array,ordered_mptr_array)
+      call get_ordered_array(mptr_array,ordered_mptr_array)
 
          mptr = lstart(1)
 ! 71      if (mptr .eq. 0) go to 91
@@ -884,7 +885,7 @@ c             ! use same alg. as when setting refinement when first make new fin
              enddo
          deallocate(mptr_array)
          deallocate(ordered_mptr_array)
-         deallocate(corner_array)
+         !deallocate(corner_array)
 
 
 
@@ -962,21 +963,22 @@ c             ! use same alg. as when setting refinement when first make new fin
 !         if (mptr .ne. 0) go to 95
 !         print *,"num of corners",corner_counter
 
-         allocate(mptr_array(corner_counter))
-         allocate(ordered_mptr_array(corner_counter))
-         allocate(corner_array(corner_counter,2))
+!         allocate(mptr_array(corner_counter))
+!         allocate(ordered_mptr_array(corner_counter))
+!         allocate(corner_array(corner_counter,2))
          
-         mptr = lstart(1)
-         do i_pkj =1,corner_counter
-             mptr_array(i_pkj) = mptr    
-             corner_array(i_pkj,1) = rnode(cornxlo,mptr)
-             corner_array(i_pkj,2) = rnode(cornylo,mptr)
-             mptr = node(levelptr, mptr)
-         enddo
-         print *,"mptr_array = ", mptr_array
-      print *,"corner array = ",(corner_array(i1,:),i1=1,corner_counter)
+!         mptr = lstart(1)
+!         do i_pkj =1,corner_counter
+!             mptr_array(i_pkj) = mptr    
+!             corner_array(i_pkj,1) = rnode(cornxlo,mptr)
+!             corner_array(i_pkj,2) = rnode(cornylo,mptr)
+!             mptr = node(levelptr, mptr)
+!         enddo
+!         print *,"mptr_array = ", mptr_array
+!      print *,"corner array = ",(corner_array(i1,:),i1=1,corner_counter)
          
-      call set_global(corner_array,mptr_array,ordered_mptr_array)
+!      call set_global(corner_array,mptr_array,ordered_mptr_array)
+       call get_ordered_array(mptr_array,ordered_mptr_array)
 
          mptr = lstart(1)
           do i2 = 1,size(ordered_mptr_array)
@@ -1012,7 +1014,7 @@ c             ! use same alg. as when setting refinement when first make new fin
             enddo
          deallocate(mptr_array)
          deallocate(ordered_mptr_array)
-         deallocate(corner_array)
+!         deallocate(corner_array)
                           
                    
                    if ( .not.vtime) goto 202

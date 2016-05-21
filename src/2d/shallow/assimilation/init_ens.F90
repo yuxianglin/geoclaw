@@ -104,22 +104,22 @@ SUBROUTINE init_ens(filtertype, dim_p, dim_ens, state_p, Uinv, &
   DEALLOCATE(field)
 
   !Just testing printing
-  call oned_to_twod(3200,2,2,index_2d_pdaf)
-  print *, "2d domain is", index_2d_pdaf
-  call oned_to_twod(5445,2,2,index_2d_pdaf)
-  print *, "2d domain is", index_2d_pdaf
-  call oned_to_twod(5720,2,2,index_2d_pdaf)
-  print *, "2d domain is", index_2d_pdaf
-  call oned_to_twod(10000,2,2,index_2d_pdaf)
-  print *, "2d domain is", index_2d_pdaf
+!  call oned_to_twod(3200,2,2,index_2d_pdaf)
+!  print *, "2d domain is", index_2d_pdaf
+!  call oned_to_twod(5445,2,2,index_2d_pdaf)
+!  print *, "2d domain is", index_2d_pdaf
+!  call oned_to_twod(5720,2,2,index_2d_pdaf)
+!  print *, "2d domain is", index_2d_pdaf
+!  call oned_to_twod(10000,2,2,index_2d_pdaf)
+!  print *, "2d domain is", index_2d_pdaf
 
-  call twod_to_oned(14,100,index_1d_pdaf)
-  print *, "1d domain is", index_1d_pdaf
-  call twod_to_oned(59,45,index_1d_pdaf)
-  print *, "1d domain is", index_1d_pdaf
-  call twod_to_oned(65,20,index_1d_pdaf)
-  print *, "1d domain is", index_1d_pdaf
-  call twod_to_oned(100,100,index_1d_pdaf)
-  print *, "1d domain is", index_1d_pdaf
+!  call twod_to_oned(14,100,index_1d_pdaf)
+!  print *, "1d domain is", index_1d_pdaf
+!  call twod_to_oned(59,45,index_1d_pdaf)
+!  print *, "1d domain is", index_1d_pdaf
+!  call twod_to_oned(65,20,index_1d_pdaf)
+!  print *, "1d domain is", index_1d_pdaf
+!  call twod_to_oned(100,100,index_1d_pdaf)
+!  print *, "1d domain is", index_1d_pdaf
 
 END SUBROUTINE init_ens
