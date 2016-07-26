@@ -8,7 +8,7 @@ that will be read in by the Fortran code.
 
 import os
 import numpy as np
-
+import pdb
 
 #------------------------------
 def setrun(claw_pkg='geoclaw'):
@@ -425,6 +425,7 @@ def setgeo(rundata):
 
 def set_PDAF(rundata):
     import clawpack.geoclaw.data
+#    pdb.set_trace()
     rundata.add_data(clawpack.geoclaw.data.PDAFData(), 'pdaf_data')
     rundata.pdaf_data.filtertype = 2
     rundata.pdaf_data.num_ensembles = 5
@@ -436,6 +437,6 @@ if __name__ == '__main__':
     # Set up run-time parameters and write all data files.
     import sys
     rundata = setrun(*sys.argv[1:])
-    #rundata = set_PDAF(rundata)
+    rundata = set_PDAF(rundata)
     rundata.write()
 
