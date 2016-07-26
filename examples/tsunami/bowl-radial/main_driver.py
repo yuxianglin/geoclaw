@@ -44,8 +44,8 @@ if __name__ == "__main__":
         #Make initial ensemble
         make_init_ens.makeinitens2(xv, yv,num_ens,h1,h2,ictype,ens_type)
         #make_init_ens.makeinitens(xv, yv, num_ens,ictype=ictype)
-#        if ((nx > 50) & (ny > 50)):
-#            chunk.chunk_write(range(1,num_ens+1),type1="init")
+        if ((nx > 50) & (ny > 50)):
+            chunk.chunk_write(range(1,num_ens+1),type1="init")
   #Make observations
    #if num_ens != 1:
     xobs_start = 20 
@@ -60,6 +60,12 @@ if __name__ == "__main__":
         #make_obs.make_obs_testing(xv, yv, obs_time_list, xobs_start, yobs_start, xobs_end, yobs_end, nxobs, nyobs, ictype)
         if ((nx > 50) & (ny > 50)):
             chunk.chunk_write(obs_time_list,type1="obs")
+
+
+
+
+
+
     dic={0:'SEEK',1:'SEIK',2:"EnKF",3:"LSEIK",4:"ETKF",5:"LETKF",6:"ESTKF",7:"LESTKF"}
     if filtertype==3 or filtertype==5 or filtertype==7:
         out_dir='_output_'+dic[filtertype]+'_r='+str(local_range)+'_ens='+str(num_ens)+'_obs='+str(nxobs)+'by'+str(nyobs)+'_rms='+str(rms_obs)
@@ -74,15 +80,15 @@ if __name__ == "__main__":
     #4. Run "make .output"
     #5. Proceed to error analysis
     #------------------------------------------------------#
-    run_geoclaw.run_geoclaw("../xgeoclaw",\
-            filtertype, \
-            num_ens, \
-            rms_obs,\
-            delt_obs,\
-            local_range,\
-            out_dir,\
-            output_step_interval,\
-            total_steps)
+#    run_geoclaw.run_geoclaw("../xgeoclaw",\
+#            filtertype, \
+#            num_ens, \
+#            rms_obs,\
+#            delt_obs,\
+#            local_range,\
+#            out_dir,\
+#            output_step_interval,\
+#            total_steps)
     #------------------------------------------------------#
    # #Error analysis
 #    error_analysis.error_calc(ictype, num_time_steps, ploterror=True)

@@ -416,11 +416,12 @@ c        if this is a restart, make sure chkpt times start after restart time
 
 
       call set_global(corner_array,mptr_array,ordered_mptr_array)
-*      call field_conversion()
-      print *,field(2500)
-      open(1,file="ens_1_mptr.txt")
-      write(1,*) field
-      close(1)
+*      print *,field(4946+100:4955+100)
+      call field_conversion()
+*      print *,field(7501:7505)
+*      open(1,file="ens_1_mptr.txt")
+*      write(1,*) field
+*      close(1)
          mptr = lstart(1)
 ! 71      if (mptr .eq. 0) go to 91
           do i2 = 1,size(ordered_mptr_array)
