@@ -474,6 +474,7 @@ class PDAFData(clawpack.clawutil.data.ClawData):
         self.add_attribute('num_ensembles', 5)
         self.add_attribute('rms_obs', 0.01)
         self.add_attribute('delt_obs', 10)
+        self.add_attribute('local_range', 10)
 
 
     def write(self, data_source="setrun.py"):
@@ -483,6 +484,7 @@ class PDAFData(clawpack.clawutil.data.ClawData):
         self.data_write("delt_obs",description="(Forecast interval)")
         self.data_write("rms_obs",description="(Avg obs error)")
         self.data_write("num_ensembles", description="(Number of ensembles)")
+        self.data_write("local_range", description="(local range)")
         self.close_data_file()
 
 

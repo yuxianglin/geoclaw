@@ -3,7 +3,7 @@
 !    including AMR parameters and storm fields.  This module includes modules
 !    for specific implementations of storms such as the Holland model.
 ! ==============================================================================
-!  Distributed under the terms of the Berkeley Software Distribution (BSD) 
+!  Distributed under the terms of the Berkeley Software Distribution (BSD)
 !  license
 !                     http://www.opensource.org/licenses/
 ! ==============================================================================
@@ -24,7 +24,7 @@ module storm_module
 
     ! Locations of wind and pressure fields
     integer :: wind_index, pressure_index
-    
+
     ! Source term control and parameters
     logical :: wind_forcing, pressure_forcing
 
@@ -35,7 +35,7 @@ module storm_module
             real(kind=8), intent(in) :: speed, theta
         end function drag_function
     end interface
-        
+
     ! Function pointer to wind drag requested
     procedure (drag_function), pointer :: wind_drag
 
@@ -61,7 +61,7 @@ contains
     ! ========================================================================
     !   subroutine set_storm(data_file)
     ! ========================================================================
-    ! Reads in the data file at the path data_file.  Sets the following 
+    ! Reads in the data file at the path data_file.  Sets the following
     ! parameters:
     !     rho_air = density of air
     !     Pn = Ambient atmospheric pressure
@@ -81,15 +81,15 @@ contains
         use geoclaw_module, only: pi
 
         implicit none
-        
+
         ! Input arguments
         character(len=*), optional, intent(in) :: data_file
-        
+
         ! Locals
         integer, parameter :: unit = 13
         integer :: i, drag_law
         character(len=200) :: storm_file_path, line
-        
+
         ! Open file
         if (present(data_file)) then
             call opendatafile(unit,data_file)
@@ -100,7 +100,7 @@ contains
         ! Set some parameters
         wind_index = 5
         pressure_index = 7
-        
+
         ! Read in parameters
         ! Physics
         ! TODO: These are currently set directly in the types, should change!
@@ -123,13 +123,13 @@ contains
         end select
         read(unit,*) pressure_forcing
         read(unit,*)
-        
+
         ! Set drag law function pointer
 !         ! Source term algorithm parameters
-!         read(unit,*) wind_tolerance
-!         read(unit,*) pressure_tolerance
-!         read(unit,*)
-        
+         read(unit,*) wind_index
+         read(unit,*) pressure_index
+         read(unit,*)
+
         ! AMR parameters
         read(unit,'(a)') line
         allocate(wind_refine(get_value_count(line)))
@@ -138,17 +138,17 @@ contains
         allocate(R_refine(get_value_count(line)))
         read(line,*) (R_refine(i),i=1,size(R_refine,1))
         read(unit,*)
-        
-        ! Storm Setup 
+
+        ! Storm Setup
         read(unit,"(i1)") storm_type
         read(unit,"(d16.8)") landfall
         read(unit,*) storm_file_path
-        
+
         close(unit)
 
         ! Print log messages
         open(unit=log_unit, file="fort.surge", status="unknown", action="write")
-        
+
         write(log_unit,"(a,1d16.8)") "rho_air =          ",rho_air
         write(log_unit,"(a,1d16.8)") "ambient_pressure = ",ambient_pressure
         write(log_unit,*) ""
@@ -191,7 +191,7 @@ contains
     !   real(kind=8) function *_wind_drag(wind_speed)
     ! ========================================================================
     !  Calculates the drag coefficient for wind given the given wind speed.
-    !  
+    !
     !  Input:
     !      wind_speed = Magnitude of the wind in the cell
     !      theta = Angle with primary hurricane direciton
@@ -203,15 +203,15 @@ contains
     !    wave direction interaction with wind.  This implementation is based on
     !    the parameterization used in ADCIRC.  For more information see
     !
-    !    M.D. Powell (2006). “Final Report to the National Oceanic and 
-    !      Atmospheric Administration (NOAA) Joint Hurricane Testbed (JHT) 
+    !    M.D. Powell (2006). “Final Report to the National Oceanic and
+    !      Atmospheric Administration (NOAA) Joint Hurricane Testbed (JHT)
     !      Program.” 26 pp.
     !
     real(kind=8) pure function powell_wind_drag(wind_speed, theta)      &
                                          result(wind_drag)
-    
+
         implicit none
-        
+
         ! Input
         real(kind=8), intent(in) :: wind_speed, theta
 
@@ -253,9 +253,9 @@ contains
         ! Left sector =  [240.d0,  20.d0] - Center = 310
         ! Left Right sector = [310, 85] - Width = 145
         ! Right sector = [ 20.d0, 150.d0] - Center = 85
-        ! Right Rear sector = [85, 195] - Width = 
+        ! Right Rear sector = [85, 195] - Width =
         ! Rear sector =  [150.d0, 240.d0] - 195
-        ! Rear-Left sector = [85, 195] - Width = 
+        ! Rear-Left sector = [85, 195] - Width =
 
         ! Left - Right sector
         if (310.d0 < theta .and. theta <= 360.d0) then
@@ -282,7 +282,7 @@ contains
 
         ! Apply wind drag limit - May want to do this...
         ! wind_drag = min(WIND_DRAG_LIMIT, wind_drag)
-    
+
     end function powell_wind_drag
 
 
@@ -291,14 +291,14 @@ contains
     ! ========================
     !  This version is a simple limited version of the wind drag
     real(kind=8) pure function garret_wind_drag(wind_speed, theta) result(wind_drag)
-    
+
         implicit none
-        
+
         ! Input
         real(kind=8), intent(in) :: wind_speed, theta
-  
-        wind_drag = min(WIND_DRAG_LIMIT, (0.75d0 + 0.067d0 * wind_speed) * 1d-3)      
-    
+
+        wind_drag = min(WIND_DRAG_LIMIT, (0.75d0 + 0.067d0 * wind_speed) * 1d-3)
+
     end function garret_wind_drag
 
 
@@ -344,7 +344,7 @@ contains
     end function storm_location
 
     real(kind=8) function storm_direction(t) result(theta)
-        
+
         use amr_module, only: rinfinity
         use holland_storm_module, only: holland_storm_direction
         use constant_storm_module, only: constant_storm_direction
@@ -406,12 +406,12 @@ contains
         implicit none
 
         real(kind=8), intent(in) :: t
-        
+
         ! We open this here so that the file flushes and writes to disk
         open(unit=track_unit,file="fort.track",action="write",position='append')
 
         write(track_unit,"(4e26.16)") t,storm_location(t),storm_direction(t)
-        
+
         close(track_unit)
 
     end subroutine output_storm_location
