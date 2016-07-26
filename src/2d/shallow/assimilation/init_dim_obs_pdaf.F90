@@ -47,7 +47,7 @@ SUBROUTINE init_dim_obs_pdaf(step, dim_obs_p)
   INTEGER :: cnt, cnt0                ! Counters
   !REAL, ALLOCATABLE :: obs_field(:,:) ! Array for observation field read from file
   REAL, ALLOCATABLE :: obs_field(:) ! Array for observation field read from file
-  CHARACTER(len=3) :: stepstr         ! String for time step
+  CHARACTER(len=4) :: stepstr         ! String for time step
 
 
 ! ****************************************
@@ -63,7 +63,7 @@ SUBROUTINE init_dim_obs_pdaf(step, dim_obs_p)
 !  ELSE
 !     WRITE (stepstr, '(i2)') step
 !  END IF
-     WRITE (stepstr, '(i3)') step
+     WRITE (stepstr, '(i4)') step
 
   OPEN (12, file='../obs_step'//TRIM(ADJUSTL(stepstr))//'.txt', status='old')
 !  DO i = 1, ny
@@ -104,6 +104,7 @@ SUBROUTINE init_dim_obs_pdaf(step, dim_obs_p)
 !        END IF
 !     END DO
 !  END DO
+
  DO j = 1, ny*nx
     cnt0 = cnt0 + 1
     IF (obs_field(j) > -999.0) THEN

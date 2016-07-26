@@ -47,18 +47,18 @@ SUBROUTINE init_pdaf()
   INTEGER :: filter_param_i(7) ! Integer parameter array for filter
   REAL    :: filter_param_r(2) ! Real parameter array for filter
   INTEGER :: status_pdaf       ! PDAF status flag
-  !INTEGER :: doexit, steps     
-  !REAL    :: timenow           
+  !INTEGER :: doexit, steps
+  !REAL    :: timenow
   CHARACTER(len=9) :: filename_pdaf = 'pdaf.data'
   LOGICAL :: there
 
   ! External subroutines
   EXTERNAL :: init_ens         ! Ensemble initialization
-  !EXTERNAL :: next_observation_pdaf, & ! Provide time step, model time, 
+  !EXTERNAL :: next_observation_pdaf, & ! Provide time step, model time,
   !                                     ! and dimension of next observation
   !     distribute_state_pdaf, &        ! Routine to distribute a state vector to model fields
   !     prepoststep_ens_pdaf            ! User supplied pre/poststep routine
-  
+
 
 ! ***************************
 ! ***   Initialize PDAF   ***
@@ -86,13 +86,16 @@ SUBROUTINE init_pdaf()
 ! *** Filter specific variables
 
    inquire(FILE=filename_pdaf, EXIST=there)
-   if (there) then
-      call opendatafile(22, filename_pdaf)
-   endif
-! *** Forecast length (time interval between analysis steps) ***
-   !filtertype = 2    ! Type of filter
-   read(22,"(i1)") filtertype 
-                    !   (0) SEEK
+   if (.NOT. there) then
+      print *, "pdaf.data not found"
+      stop
+   else
+       call opendatafile(22, filename_pdaf)
+
+!``1 *** Forecast length (time interval between analysis steps) ***
+  !filtertype = 2    ! Type of filter
+       read(22,"(i1)") filtertype
+!    filtertype= 6   !   (0) SEEK
                     !   (1) SEIK
                     !   (2) EnKF
                     !   (3) LSEIK
@@ -100,18 +103,19 @@ SUBROUTINE init_pdaf()
                     !   (5) LETKF
                     !   (6) ESTKF
                     !   (7) LESTKF
-   read(22, "(i2)") delt_obs   ! Number of time steps between analysis/assimilation steps
-
+       read(22, "(i2)") delt_obs   ! Number of time steps between analysis/assimilation steps
+!  delt_obs=20
 ! *** specifications for observations ***
   ! avg. observation error (used for assimilation)
-   read(22,*) rms_obs     ! This error is the standard deviation 
-                   ! for the Gaussian distribution 
+       read(22,*) rms_obs     ! This error is the standard deviation
+!   rms_obs=0.0001                ! for the Gaussian distribution
 
-   read(22, "(i2)") dim_ens   ! Size of ensemble for all ensemble filters
-                              ! Number of EOFs to be used for SEEK
+       read(22, *) dim_ens   ! Size of ensemble for all ensemble filters
+!    dim_ens=5   ! Number of EOFs to be used for SEEK
+       read(22, *) local_range! Size of ensemble for all ensemble filters
    close(22)
-
-  subtype = 0       ! subtype of filter: 
+   endif
+  subtype = 0       ! subtype of filter:
                     !   ESTKF:
                     !     (0) Standard form of ESTKF
                     !   LESTKF:
@@ -140,7 +144,7 @@ SUBROUTINE init_pdaf()
                     !   This parameter has also to be set internally in PDAF_init.
   rank_analysis_enkf = 0   ! rank to be considered for inversion of HPH
                     ! in analysis of EnKF; (0) for analysis w/o eigendecomposition
-  int_rediag = 1    ! Interval of analysis steps to perform 
+  int_rediag = 1    ! Interval of analysis steps to perform
                     !    re-diagonalization in SEEK
   locweight = 0     ! Type of localizating weighting
                     !   (0) constant weight of 1
@@ -148,7 +152,8 @@ SUBROUTINE init_pdaf()
                     !   (2) use 5th-order polynomial
                     !   (3) regulated localization of R with mean error variance
                     !   (4) regulated localization of R with single-point error variance
-  local_range = 0  ! Range in grid points for observation domain in local filters
+
+!  local_range = 8 ! Range in grid points for observation domain in local filters
   srange = local_range  ! Support range for 5th-order polynomial
                     ! or range for 1/e for exponential weighting
 
@@ -192,7 +197,7 @@ SUBROUTINE init_pdaf()
      filter_param_i(4) = incremental ! Whether to perform incremental analysis
      filter_param_i(5) = 0           ! Smoother lag (not implemented here)
      filter_param_r(1) = forget      ! Forgetting factor
-     
+
      CALL PDAF_init(filtertype, subtype, 0, &
           filter_param_i, 6,&
           filter_param_r, 2, &
@@ -210,7 +215,7 @@ SUBROUTINE init_pdaf()
      filter_param_i(6) = type_trans  ! Type of ensemble transformation
      filter_param_i(7) = type_sqrt   ! Type of transform square-root (SEIK-sub4/ESTKF)
      filter_param_r(1) = forget      ! Forgetting factor
-     
+
      CALL PDAF_init(filtertype, subtype, 0, &
           filter_param_i, 7,&
           filter_param_r, 2, &
