@@ -10,6 +10,7 @@ import chunk
 def make_obs(mxv, myv, obs_time_list, xobs_start, yobs_start, xobs_end, yobs_end, nxobs, nyobs, ictype):
 
     obs_x = np.linspace(xobs_start,xobs_end, nxobs).astype('int32')
+#    print obs_x
     obs_y = np.linspace(yobs_start,yobs_end, nyobs).astype('int32')
     obs_xv, obs_yv = np.meshgrid(obs_x, obs_y)
     obs_mat = np.ones(np.shape(mxv))*-999.0
@@ -35,7 +36,7 @@ def make_obs(mxv, myv, obs_time_list, xobs_start, yobs_start, xobs_end, yobs_end
         obs_mat_land = original_case.land
 
 
-        plotmap.docontour(mxv,myv,obs_mat_water, obs_mat_land, "Observation", -999.0, 1.0, savefile=savefile)
+#        plotmap.docontour(mxv,myv,obs_mat_water, obs_mat_land, "Observation", -999.0, 1.0, savefile=savefile)
     
 
 def make_obs_testing(mxv, myv, obs_time_list, xobs_start, yobs_start, xobs_end, yobs_end, nxobs, nyobs, ictype):

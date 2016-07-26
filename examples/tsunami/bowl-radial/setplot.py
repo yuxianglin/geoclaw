@@ -75,7 +75,7 @@ def setplot(plotdata):
     plotitem.pcolor_cmin = -.25
     plotitem.pcolor_cmax = 0.25
     plotitem.add_colorbar = True
-    plotitem.amr_celledges_show = [1,1,0]
+    plotitem.amr_celledges_show = [1,0,0]
     plotitem.amr_patchedges_show = [1]
 
     # Land
@@ -85,7 +85,7 @@ def setplot(plotdata):
     plotitem.pcolor_cmin = 0.0
     plotitem.pcolor_cmax = 100.0
     plotitem.add_colorbar = False
-    plotitem.amr_celledges_show = [1,1,0]
+    plotitem.amr_celledges_show = [1,0,0]
     plotaxes.xlimits = [-100,100]
     plotaxes.ylimits = [-100,100]
 
@@ -115,7 +115,7 @@ def setplot(plotdata):
     plotitem.pcolor_cmin = -0.9
     plotitem.pcolor_cmax = 0.9
     plotitem.add_colorbar = True
-    plotitem.amr_celledges_show = [1,1,0]
+    plotitem.amr_celledges_show = [1,0,0]
     plotitem.amr_patchedges_show = [1]
 
     # Land
@@ -125,7 +125,7 @@ def setplot(plotdata):
     plotitem.pcolor_cmin = 0.0
     plotitem.pcolor_cmax = 100.0
     plotitem.add_colorbar = False
-    plotitem.amr_celledges_show = [1,1,0]
+    plotitem.amr_celledges_show = [1,0,0]
 
     # Add contour lines of bathymetry:
     plotitem = plotaxes.new_plotitem(plot_type='2d_contour')
@@ -188,7 +188,7 @@ def setplot(plotdata):
     plotitem.pcolor_cmin = -0.9
     plotitem.pcolor_cmax = 0.9
     plotitem.add_colorbar = True
-    plotitem.amr_celledges_show = [1,1,0]
+    plotitem.amr_celledges_show = [1,0,0]
     plotitem.amr_patchedges_show = [1]
 
     # Land
@@ -198,7 +198,7 @@ def setplot(plotdata):
     plotitem.pcolor_cmin = 0.0
     plotitem.pcolor_cmax = 100.0
     plotitem.add_colorbar = False
-    plotitem.amr_celledges_show = [1,1,0]
+    plotitem.amr_celledges_show = [1,0,0]
 
 
     # Add contour lines of bathymetry:

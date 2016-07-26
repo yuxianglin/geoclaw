@@ -1,14 +1,12 @@
 """
 Module to set up run time parameters for Clawpack.
-
 The values set in the function setrun are then written out to data files
 that will be read in by the Fortran code.
-
 """
 
 import os
 import numpy as np
-
+import pdb
 
 #------------------------------
 def setrun(claw_pkg='geoclaw'):
@@ -16,13 +14,10 @@ def setrun(claw_pkg='geoclaw'):
 
     """
     Define the parameters used for running Clawpack.
-
     INPUT:
         claw_pkg expected to be "geoclaw" for this setrun.
-
     OUTPUT:
         rundata - object of class ClawRunData
-
     """
 
     from clawpack.clawutil import data
@@ -132,8 +127,8 @@ def setrun(claw_pkg='geoclaw'):
         #clawdata.output_step_interval = 10
         #clawdata.total_steps = 50
         clawdata.output_step_interval = 20
-        clawdata.total_steps = 200
-        clawdata.output_t0 = True
+        clawdata.total_steps = 600
+        clawdata.output_t0 =False
         
 
     clawdata.output_format = 'ascii'      # 'ascii' or 'netcdf' 
@@ -151,7 +146,7 @@ def setrun(claw_pkg='geoclaw'):
     # The current t, dt, and cfl will be printed every time step
     # at AMR levels <= verbosity.  Set verbosity = 0 for no printing.
     #   (E.g. verbosity == 2 means print only on levels 1 and 2.)
-    clawdata.verbosity = 2
+    clawdata.verbosity = 4
 
 
 
@@ -162,7 +157,7 @@ def setrun(claw_pkg='geoclaw'):
     # if dt_variable==1: variable time steps used based on cfl_desired,
     # if dt_variable==0: fixed time steps dt = dt_initial will always be used.
     #clawdata.dt_variable = True #Original code by Kyle had it true
-    clawdata.dt_variable = False 
+    clawdata.dt_variable =False
 
     # Initial time step for variable dt.
     # If dt_variable==0 then dt=dt_initial for all steps:
@@ -233,11 +228,11 @@ def setrun(claw_pkg='geoclaw'):
     #   2 => periodic (must specify this at both boundaries)
     #   3 => solid wall for systems where q(2) is normal velocity
 
-    clawdata.bc_lower[0] = 'extrap'
-    clawdata.bc_upper[0] = 'extrap'
+    clawdata.bc_lower[0] = 1
+    clawdata.bc_upper[0] = 1
 
-    clawdata.bc_lower[1] = 'extrap'
-    clawdata.bc_upper[1] = 'extrap'
+    clawdata.bc_lower[1] = 1
+    clawdata.bc_upper[1] = 1
 
     # Specify when checkpoint files should be created that can be
     # used to restart a computation.
@@ -270,9 +265,9 @@ def setrun(claw_pkg='geoclaw'):
     amrdata.amr_levels_max = 1
 
     # List of refinement ratios at each level (length at least mxnest-1)
-    amrdata.refinement_ratios_x = [1]
-    amrdata.refinement_ratios_y = [1]
-    amrdata.refinement_ratios_t = [1]
+    amrdata.refinement_ratios_x = [2,2]
+    amrdata.refinement_ratios_y = [2,2]
+    amrdata.refinement_ratios_t = [2,2]
 
 
     # Specify type of each aux variable in amrdata.auxtype.
@@ -298,12 +293,12 @@ def setrun(claw_pkg='geoclaw'):
     amrdata.clustering_cutoff = 0.700000
 
     # print info about each regridding up to this level:
-    amrdata.verbosity_regrid = 0  
+    amrdata.verbosity_regrid = 4  
 
 
     #  ----- For developers ----- 
     # Toggle debugging print statements:
-    amrdata.dprint = False      # print domain flags
+    amrdata.dprint = True # print domain flags
     amrdata.eprint = False      # print err est flags
     amrdata.edebug = False      # even more err est flags
     amrdata.gprint = False      # grid bisection/clustering
@@ -320,12 +315,12 @@ def setrun(claw_pkg='geoclaw'):
     regions = rundata.regiondata.regions
     # to specify regions of refinement append lines of the form
     #  [minlevel,maxlevel,t1,t2,x1,x2,y1,y2]
-    regions.append([1, 1, 0., 1.e10, -100.,100., -100.,100.])
-    regions.append([1, 2, 0., 1.e10,    0.,100.,    0.,100.])
-    regions.append([2, 3, 3., 1.e10,   52., 72.,   52., 72.])
-    regions.append([2, 3, 3., 1.e10,   75., 95.,   -10.,  10.])
-    regions.append([2, 4, 3.4, 1.e10,   57., 68.,   57., 68.])
-    regions.append([2, 4, 3.4, 1.e10,   83., 92.,   -4.,  4.])
+    regions.append([1, 2, 0., 1.e10, -100.,100., -100.,100.])
+    #regions.append([1, 3, 0., 1.e10,    0.,100.,    0.,100.])
+    regions.append([3, 3, 0., 1.e10,   -30., 30.,   -30., 30.])
+    #regions.append([3, 3, 0., 1.e10,   -32., -22.,   -32.,-22.])
+    #regions.append([2, 4, 3.4, 1.e10,   57., 68.,   57., 68.])
+    #regions.append([2, 4, 3.4, 1.e10,   83., 92.,   -4.,  4.])
 
     # == setgauges.data values ==
     # for gauges append lines of the form  [gaugeno, x, y, t1, t2]
@@ -424,18 +419,20 @@ def setgeo(rundata):
     # ----------------------
 
 def set_PDAF(rundata):
-    import clawpack.geoclaw.data
-    rundata.add_data(clawpack.geoclaw.data.PDAFData(), 'pdaf_data')
-    rundata.pdaf_data.filtertype = 2
-    rundata.pdaf_data.num_ensembles = 5
-    rundata.pdaf_data.rms_obs = 0.000001
+    import geoclaw.data as geoclaw
+
+#    pdb.set_trace()
+    rundata.add_data(geoclaw.PDAFData(), 'pdaf_data')
+    rundata.pdaf_data.filtertype = 7
+    rundata.pdaf_data.num_ensembles = 4
+    rundata.pdaf_data.rms_obs = 0.00001
     rundata.pdaf_data.delt_obs = 20
+    rundata.pdaf_data.local_range= 200
     return rundata
 
 if __name__ == '__main__':
     # Set up run-time parameters and write all data files.
     import sys
     rundata = setrun(*sys.argv[1:])
-    #rundata = set_PDAF(rundata)
+    rundata = set_PDAF(rundata)
     rundata.write()
-

@@ -1,6 +1,7 @@
 import numpy as np
 import make_obs
 import chunk
+import pdb
 
 def makeinitens(xv, yv, num_ens, ictype="hump"):
     """
@@ -20,20 +21,25 @@ def makeinitens(xv, yv, num_ens, ictype="hump"):
         z = makeinit(xv, yv, i*param, ictype = ictype)
         np.savetxt("ens_"+str(i)+".txt", z, fmt='%12.10f')
 
-def makeinitens2(xv, yv, num_ens, lower=1.5, upper=3.0, ictype = "hump"):
+
+def makeinitens2(xv, yv, num_ens,h1,h2, ictype = "hump",ens_type = "linear"):
     """
     Write output for ensemble members. This format is input for PDAF
     """
-    
+   # pdb.set_trace()
     print "Gaussian hump initial condition selected"
     if num_ens == 1:
         z = makeinit(xv, yv, 0, ictype = ictype)
         np.savetxt("ens_1.txt", z, fmt='%12.10f')
     else:
-        pert = lambda x: (upper-lower)*np.exp(0.8)*(x-1)/(num_ens -1) + (-5.0+lower*np.exp(0.8))
-        for i in range(1,num_ens +1):
-            z = makeinit(xv, yv, pert(i), ictype = ictype)
-            np.savetxt("ens_"+str(i)+".txt", z, fmt='%12.10f')
+		if ens_type=="linear":
+			pert = lambda x: (h1-h2)*(x-1)/(num_ens -1) + (-6.0+h2)
+		elif ens_type=="randn":
+			pert = lambda x:h2*np.random.randn()+h1-6
+        
+		for i in range(1,num_ens +1):
+			z = makeinit(xv, yv, pert(i), ictype = ictype)
+			np.savetxt("ens_"+str(i)+".txt", z, fmt='%12.10f')
 
     if ictype == "planewave":
         print "Not yet set for ictype planewave"
@@ -52,7 +58,7 @@ def makeinit(xv, yv, perturb, ictype = "hump"):
     # Gaussian hump
     if ictype == "hump":
         ze = -((xv)**2 + (yv)**2)/10.
-        z = np.where(ze>-10., (5.e0 + perturb)*np.exp(ze), 0.)
+        z = np.where(ze>-10., (6.0 + perturb)*np.exp(ze), 0.)
         print "Max amplitude = ", np.max(z)
 
     # Planewave 

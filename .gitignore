@@ -1,4 +1,8 @@
+*.fig
+geoclawIDE/
+pdaf_online/
 *.pyc
+*.m
 *.o
 *.mod
 *.data
@@ -10,7 +14,9 @@ xamr
 xgeoclaw
 *.html
 _output/
+_output*
 _plots/
+_plots*
 *~
 *.asc
 *.tt3

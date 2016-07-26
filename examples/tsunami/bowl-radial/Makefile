@@ -21,10 +21,12 @@ SETPLOT_FILE = setplot.py      # File containing function to set plots
 PLOTDIR = _plots               # Directory for plots
 
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
+FC :=mpif90
 
 # Compiler flags can be specified here or set as an environment variable
-FFLAGS ?= -cpp -DUSE_PDAF -L$(PDAFLIB) -I$(PDAFLIB) -lpdaf-d -I$(PDAFLIB)/dummympi -lblas -llapack  
-#FFLAGS ?= -cpp
+#FFLAGS ?= -cpp -DUSE_PDAF -I$(PDAFLIB) -L$(PDAFLIB) -lpdaf-d -I$(PDAFLIB)/dummympi -lblas -llapack
+FFLAGS ?= -cpp -DUSE_PDAF -I$(PDAFLIB) -L$(PDAFLIB) -lpdaf-d -lblas -llapack -lm #-l/user/include/mpich
+#FFLAGS ?= -cpp -fopenmp
 
 
 # ---------------------------------
@@ -51,7 +53,7 @@ MODULES = \
  $(GEOLIB)/surge/storm_module.f90 \
  $(GEOLIB)/friction_module.f90 \
  $(GEOLIB)/sortarr.f90 \
- $(GEOLIB)/pkj_geoclaw/mapdomain.f90
+ $(GEOLIB)/pkj_geoclaw/mapdomain.f90 \
 
 SOURCES = \
   $(GEOLIB)/setprob.f90 \
@@ -74,7 +76,7 @@ SOURCES = \
   $(GEOLIB)/filpatch.f90 \
   $(AMRLIB)/prefilp.f90 \
   $(AMRLIB)/trimbd.f \
-  $(AMRLIB)/bound.f \
+  $(AMRLIB)/bound.f90 \
   $(AMRLIB)/intfil.f \
   $(GEOLIB)/bc2amr.f \
   $(GEOLIB)/update.f \
@@ -177,6 +179,9 @@ SOURCES = \
   $(AMRLIB)/init_alloc.f90 \
   $(AMRLIB)/restrt_alloc.f90 \
   $(AMRLIB)/resize_alloc.f90 \
+  $(GEOLIB)/oned_to_twod.f90 \
+  $(GEOLIB)/field_conversion.f90 \
+
 #-------------------------------------------------------------------
 # Include Makefile containing standard definitions and make options:
 include $(CLAWMAKE)
@@ -185,8 +190,10 @@ include $(CLAWMAKE)
 .PHONY: topo all
 topo:
 	python maketopo.py
+	-cp bowl.topotype2 ./geoclawIDE
+	-cp hump.xyz ./geoclawIDE
 
-all: 
+all:
 	$(MAKE) topo
 	$(MAKE) .plots
 	$(MAKE) .htmls
