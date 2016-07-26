@@ -403,6 +403,9 @@ contains
 
         use geoclaw_module
         use utility_module, only: parse_values
+#ifdef USE_PDAF
+        use mod_parallel,only: mype_world
+#endif
 
         implicit none
 
@@ -419,10 +422,14 @@ contains
         real(kind=8) :: no_data_value,x,y,z,topo_temp
         real(kind=8) :: values(10)
         character(len=20) :: str
-
+#ifdef USE_PDAF
+        if (mype_world==0) then
+#endif
         print *, ' '
         print *, 'Reading topography file  ', fname
-
+#ifdef USE_PDAF
+       endif
+#endif
         open(unit=iunit, file=fname, status='unknown',form='formatted')
 
         select case(abs(topo_type))

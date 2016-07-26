@@ -26,7 +26,7 @@ c     not being able to dimension at maxthreads
 c
 c  ::::::::::::::; ADVANC :::::::::::::::::::::::::::::::::::::::::::
 c  integrate all grids at the input  'level' by one step of its delta(t)
-c  this includes:  setting the ghost cells 
+c  this includes:  setting the ghost cells
 c                  advancing the solution on the grid
 c                  adjusting fluxes for flux conservation step later
 c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -66,7 +66,7 @@ c
         end do
 !$OMP END PARALLEL DO
       call system_clock(clock_finishBound,clock_rate)
-      timeBound = timeBound + clock_finishBound - clock_start  
+      timeBound = timeBound + clock_finishBound - clock_start
 
 c
 c save coarse level values if there is a finer level for wave fixup
@@ -78,22 +78,22 @@ c save coarse level values if there is a finer level for wave fixup
 c
       time = rnode(timemult,lstart(level))
 c      call fgrid_advance(time,delt)
-      
+
       dtlevnew = rinfinity
       cfl_level = 0.d0    !# to keep track of max cfl seen on each level
 
       if (.not. topo_finalized) then
          call topo_update(time)
          endif
-c 
+c
       call system_clock(clock_startStepgrid,clock_rate)
-        
+
 c  set number of thrad to use. later will base on number of grids
 c     nt = 4
 c   ! $OMP PARALLEL DO num_threads(nt)
 
-!$OMP PARALLEL DO 
-!$OMP&            PRIVATE(j,mptr,nx,ny,mitot,mjtot)  
+!$OMP PARALLEL DO
+!$OMP&            PRIVATE(j,mptr,nx,ny,mitot,mjtot)
 !$OMP&            PRIVATE(mythread,dtnew)
 !$OMP&            SHARED(rvol,rvoll,level,nvar,mxnest,alloc,intrat)
 !$OMP&            SHARED(nghost,intratx,intraty,hx,hy,naux,listsp)
@@ -110,7 +110,7 @@ c
           call par_advanc(mptr,mitot,mjtot,nvar,naux,dtnew)
 !$OMP CRITICAL (newdt)
           dtlevnew = dmin1(dtlevnew,dtnew)
-!$OMP END CRITICAL (newdt)    
+!$OMP END CRITICAL (newdt)
 
       end do
 !$OMP END PARALLEL DO
@@ -227,7 +227,7 @@ c        # now has boundary conditions filled in.
 c     should change the way print_gauges does io - right now is critical section
 
       if (num_gauges > 0) then
-           call print_gauges(alloc(locnew:locnew+nvar*mitot*mjtot), 
+           call print_gauges(alloc(locnew:locnew+nvar*mitot*mjtot),
      .                       alloc(locaux:locnew+nvar*mitot*mjtot),
      .                       xlow,ylow,nvar,mitot,mjtot,naux,mptr)
            endif

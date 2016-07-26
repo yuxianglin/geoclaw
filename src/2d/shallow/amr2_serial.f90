@@ -79,10 +79,11 @@ program amr2
     use amr_module, only: output_aux_onlyonce, matlabu
 
     use amr_module, only: lfine, lentot, iregridcount, avenumgrids
-    use amr_module, only: tvoll, rvoll, rvol, mstart, possk, ibuff
-    use amr_module, only: timeRegridding, timeUpdating, timeValout
-    use amr_module, only: timeGrdfitAll,timeFlglvl,timeGrdfit2,timeSetaux,timeFilval
-    use amr_module, only: timeBound, timeStepgrid, timeFlagger,timeBufnst,timeFilvalTot
+    use amr_module, only: tvoll, tvollCPU, rvoll, rvol, mstart, possk, ibuff
+    use amr_module, only: timeRegridding,timeUpdating, timeValout
+    use amr_module, only: timeBound,timeStepgrid, timeFlagger,timeBufnst,timeFilvalTot
+    use amr_module, only: timeBoundCPU,timeStepGridCPU,timeSetauxCPU,timeRegriddingCPU
+    use amr_module, only: timeSetaux, timeSetauxCPU, timeValoutCPU
     use amr_module, only: kcheck, iorder, lendim, lenmax
 
     use amr_module, only: dprint, eprint, edebug, gprint, nprint, pprint
@@ -93,25 +94,16 @@ program amr2
     use regions_module, only: set_regions
     use gauges_module, only: set_gauges, num_gauges
     use fgmax_module, only: set_fgmax, FG_num_fgrids
-
 #ifdef USE_PDAF
-    use mod_model, only : nx,ny, field,total_steps, dtinit, time, &
-    num_grids, node_pdaf, rnode_pdaf
-    use amr_module, only: nsize, rsize, maxgr, node, rnode
-    use mod_parallel, only: MPIerr,mpi_comm_world,mype_world,npes_world,&
-        MPI_INTEGER,MPIstatus
-!    include '/usr/include/mpich/mpif.h'
+    use mod_model, only : field,nx,ny, time, dtinit,total_steps
 #endif
-
     implicit none
-
-
 
     ! Local variables
     integer :: i, iaux, mw, level
     integer :: ndim, nvar, naux, mcapa1, mindim, dimensional_split
 #ifdef USE_PDAF
-    integer :: nstart, nsteps, nv1, lentotsave, num_gauge_SAVE
+    integer :: nstart, nsteps, nv1,         lentotsave, num_gauge_SAVE
 #else
     integer :: nstart, nsteps, nv1, nx, ny, lentotsave, num_gauge_SAVE
 #endif
@@ -123,12 +115,10 @@ program amr2
 #endif
     logical :: vtime, rest, output_t0
     integer :: num_fgmax
-#ifdef USE_PDAF
-    integer :: file_free=0
-#endif
 
     ! Timing variables
-    integer :: clock_start, clock_finish, clock_rate
+    integer :: clock_start, clock_finish, clock_rate, ttotal
+    real(kind=8) :: cpu_start, cpu_finish, ttotalcpu
 
     ! Common block variables
     real(kind=8) :: dxmin, dymin
@@ -142,34 +132,19 @@ program amr2
     character(len=*), parameter :: dbugfile = 'fort.debug'
     character(len=*), parameter :: matfile = 'fort.nplot'
     character(len=*), parameter :: parmfile = 'fort.parameters'
-
-
 #ifdef USE_PDAF
     ! Add parallelization
-    !call MPI_init(MPIerr)
-   ! call init_parallel()
-   CALL init_parallel_pdaf(0,2)
-   ! CALL MPI_Comm_size(MPI_COMM_WORLD, npes_world, MPIerr)
-   ! CALL MPI_Comm_rank(MPI_COMM_WORLD, mype_world, MPIerr)
-
-   if (mype_world==0) then
-       file_free=1
-   else
-       call MPI_RECV(file_free,1,MPI_INTEGER,mype_world -1,1,MPI_COMM_World,MPIstatus,MPIerr)
-   endif
-   if (file_free==1) then
-       print *,"reading file in process",mype_world
+        CALL init_parallel_pdaf(0,1)
 #endif
     ! Open parameter and debug files
     open(dbugunit,file=dbugfile,status='unknown',form='formatted')
     open(parmunit,file=parmfile,status='unknown',form='formatted')
 
-
-
     maxthreads = 1    !! default, if no openmp
 
     ! Open AMRClaw primary parameter file
     call opendatafile(inunit,clawfile)
+
     ! Number of space dimensions, not really a parameter but we read it in and
     ! check to make sure everyone is on the same page.
     read(inunit,"(i1)") ndim
@@ -184,13 +159,12 @@ program amr2
     read(inunit,*) xlower, ylower
     read(inunit,*) xupper, yupper
     read(inunit,*) nx, ny
+
+    print *, nx,ny
     read(inunit,*) nvar    ! meqn
     read(inunit,*) mwaves
     read(inunit,*) naux
     read(inunit,*) t0
-!    call mpi_barrier(mpi_comm_world,mpierr)
-!        print *,nx
-!    call mpi_barrier(mpi_comm_world,mpierr)
 
     ! ==========================================================================
     ! Output Options
@@ -345,9 +319,8 @@ program amr2
         ! Checkpoint every checkpt_interval steps on coarse grid
         read(inunit,*) checkpt_interval
     endif
-!   call mpi_barrier(mpi_comm_world,mpierr)
+
     close(inunit)
-!   call mpi_barrier(mpi_comm_world,mpierr)
 
     ! ==========================================================================
     !  Refinement Control
@@ -406,9 +379,7 @@ program amr2
     read(inunit,*) tprint
     read(inunit,*) uprint
 
-!   call mpi_barrier(mpi_comm_world,mpierr)
     close(inunit)
-!   call mpi_barrier(mpi_comm_world,mpierr)
     ! Finished with reading in parameters
     ! ==========================================================================
 
@@ -471,15 +442,11 @@ program amr2
     write(parmunit,*) 'Running amrclaw with parameter values:'
     write(parmunit,*) ' '
 
-#ifdef USE_PDAF
-    if (mype_world==0) then
-#endif
-        print *, ' '
-        print *, 'Running amrclaw ...  '
-        print *, ' '
-#ifdef USE_PDAF
-    endif
-#endif
+
+    print *, ' '
+    print *, 'Running amrclaw ...  '
+    print *, ' '
+
     hxposs(1) = (xupper - xlower) / nx
     hyposs(1) = (yupper - ylower) / ny
 
@@ -528,14 +495,12 @@ program amr2
         call stst1()
 
 
-
         ! changed 4/24/09: store dxmin,dymin for setaux before
         ! grids are made, in order to average up from finest grid.
         dxmin = hxposs(mxnest)
         dymin = hyposs(mxnest)
 
         call domain(nvar,vtime,nx,ny,naux,t0)
-
 
         ! Hold off on gauges until grids are set.
         ! The fake call to advance at the very first timestep
@@ -568,14 +533,9 @@ program amr2
     write(parmunit,*) ' '
 
 !$   maxthreads = omp_get_max_threads()
-#ifdef USE_PDAF
-        if (mype_world==0) then
-#endif
      write(outunit,*)" max threads set to ",maxthreads
      print *," max threads set to ",maxthreads
-#ifdef USE_PDAF
-       endif
-#endif
+
     !
     !  print out program parameters for this run
     !
@@ -608,82 +568,60 @@ program amr2
     write(outunit,"('       var ',i5,' of type ', a10)") &
                                                 (iaux,auxtype(iaux),iaux=1,naux)
     if (mcapa > 0) write(outunit,"(' capacity fn. is aux. var',i9)") mcapa
-#ifdef USE_PDAF
-        if (mype_world==0) then
-#endif
 
     print *, ' '
     print *, 'Done reading data, starting computation ...  '
     print *, ' '
-#ifdef USE_PDAF
-       endif
-#endif
-#ifdef USE_PDAF
-    endif
-    if (mype_world /=npes_world -1) then
-        call MPI_SEND(file_free,1,MPI_INTEGER,mype_world +1,1,MPI_COMM_WORLD,MPIerr)
 
-    endif
-    call MPI_Barrier(MPI_COMM_World, MPIerr)
-#endif
 
 
     call outtre (mstart,printout,nvar,naux)
-
     write(outunit,*) "  original total mass ..."
     call conck(1,nvar,naux,time,rest)
 
-   ! Timing
+    ! Timing
     call system_clock(clock_start,clock_rate)
-
+    call cpu_time(cpu_start)
 
     if (output_t0) then
         call valout(1,lfine,time,nvar,naux)
     endif
     close(parmunit)
 
-
-
 #ifdef USE_PDAF
 !Allocate memory for temporary field in PDAF
 ! *** Screen output ***
-
     total_steps = nstop
-    if (mype_world==0) then
     WRITE (*, '(1x, a)') 'INITIALIZE GEOCLAW with PDAF'
     WRITE (*, '(10x,a,i4,1x,a1,1x,i4)') 'Grid size:', nx, 'x', ny
-    WRITE (*, '(10x,a,i4)') 'Time steps', total_steps
-    endif
+    WRITE (*, '(10x,a,i4)') 'Time steps: ', total_steps
+    dtinit=possk(1)
 
-    !ALLOCATE(field(ny+2*nghost,nx+2*nghost))
-    !ALLOCATE(field(ny,nx))
-    ALLOCATE(field(ny*nx))
-    !ALLOCATE(field(ny*nx))
-    num_grids = numgrids(1)
+   !ALLOCATE(field(ny+2*nghost,nx+2*nghost))
+   !ALLOCATE(field(ny,nx))
+   !ALLOCATE(field(ny,nx))
+   ALLOCATE(field(ny*nx))
 
+  ! ************************************
+  ! *** Read initial field from file ***
+  ! ************************************
 
-    ALLOCATE(node_pdaf(nsize, maxgr))
-    ALLOCATE(rnode_pdaf(rsize, maxgr))
-    node_pdaf = node
-    rnode_pdaf = rnode
-   ! ************************************
-   ! *** Read initial field from file ***
-   ! ************************************
+  !OPEN(15, file = '../true_initial.txt', status='old')
 
-   !OPEN(15, file = '../true_initial.txt', status='old')
+  !DO i = 1, nx
+  !    READ (15, *) field(i, :)
+  !    !PRINT *,field(i,i)
+  !END DO
 
-   !DO i = 1, nx
-   !    READ (15, *) field(i, :)
-   !    !PRINT *,field(i,i)
-   !END DO
-
-   !CLOSE(15)
+  !CLOSE(15)
 
 #endif
-
 #ifdef USE_PDAF
      CALL init_pdaf()
+
 #endif
+
+
 
     ! --------------------------------------------------------
     !  Tick is the main routine which drives the computation:
@@ -691,81 +629,193 @@ program amr2
     call tick(nvar,cut,nstart,vtime,time,naux,t0,rest,dt_max)
     ! --------------------------------------------------------
 
-#ifdef USE_PDAF
-    DEALLOCATE(node_pdaf)
-    DEALLOCATE(rnode_pdaf)
-#endif
-
     ! Done with computation, cleanup:
 
     ! Print out the fgmax files
     if (FG_num_fgrids > 0) call fgmax_finalize()
 
 
+
     call system_clock(clock_finish,clock_rate)
-    format_string = "('Total time to solution = ',1f16.8,' s, using', i3,' threads')"
-    write(outunit,format_string) &
-            real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8), maxthreads
-    write(*,format_string) &
-            real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8), maxthreads
+    call cpu_time(cpu_finish)
 
-    do level = 1, mxnest
-      format_string = "('Total advanc time on level ',i3,' = ',1f16.8,' s')"
-      write(outunit,format_string) level, &
-             real(tvoll(level),kind=8) / real(clock_rate,kind=8)
-      write(*,format_string) level, &
-             real(tvoll(level),kind=8) / real(clock_rate,kind=8)
+    !output timing data
+    write(*,*)
+    write(outunit,*)
+    format_string="('============================== Timing Data ==============================')"
+    write(outunit,format_string)
+    write(*,format_string)
+
+    write(*,*)
+    write(outunit,*)
+
+    !Integration time
+    format_string="('Integration Time (stepgrid + BC + overhead)')"
+    write(outunit,format_string)
+    write(*,format_string)
+
+    !Advanc time
+    format_string="('Level           Wall Time (seconds)    CPU Time (seconds)   Total Cell Updates')"
+    write(outunit,format_string)
+    write(*,format_string)
+    ttotalcpu=0.d0
+    ttotal=0
+    do level=1,mxnest
+        format_string="(i3,'           ',1f15.3,'        ',1f15.3,'    ', e17.3)"
+        write(outunit,format_string) level, &
+             real(tvoll(level),kind=8) / real(clock_rate,kind=8), tvollCPU(level), rvoll(level)
+        write(*,format_string) level, &
+             real(tvoll(level),kind=8) / real(clock_rate,kind=8), tvollCPU(level), rvoll(level)
+    	ttotalcpu=ttotalcpu+tvollCPU(level)
+    	ttotal=ttotal+tvoll(level)
     end do
-    format_string = "('Total updating   time            ',1f16.8,' s')"
-    write(outunit,format_string)  real(timeUpdating,kind=8) / real(clock_rate,kind=8)
-    write(*,format_string) real(timeUpdating,kind=8) / real(clock_rate,kind=8)
-    format_string = "('Total valout     time            ',1f16.8,' s')"
-    write(outunit,format_string)  real(timeValout,kind=8) / real(clock_rate,kind=8)
-    write(*,format_string) real(timeValout,kind=8) / real(clock_rate,kind=8)
+
+    format_string="('total         ',1f15.3,'        ',1f15.3,'    ', e17.3)"
+	write(outunit,format_string) &
+             real(ttotal,kind=8) / real(clock_rate,kind=8), ttotalCPU, rvol
+    write(*,format_string) &
+             real(ttotal,kind=8) / real(clock_rate,kind=8), ttotalCPU, rvol
 
     write(*,*)
-    format_string = "('Total regridding time (clock)    ',1f16.8,' s')"
-    write(outunit,format_string)  real(timeRegridding,kind=8) / real(clock_rate,kind=8)
-    write(*,format_string) real(timeRegridding,kind=8) / real(clock_rate,kind=8)
+    write(outunit,*)
 
-    format_string = "('   Total Grdfit     time (clock)     ',1f16.8,' s')"
-    write(outunit,format_string)  real(timeGrdfitAll,kind=8) / real(clock_rate,kind=8)
-    write(*,format_string) real(timeGrdfitAll,kind=8) / real(clock_rate,kind=8)
-   format_string = "('      Total Flglvl  time                ',1f16.8,' s')"
-    write(outunit,format_string)  real(timeFlglvl,kind=8) / real(clock_rate,kind=8)
-    write(*,format_string) real(timeFlglvl,kind=8) / real(clock_rate,kind=8)
-    format_string = "('         Total    Flagger     time (clock)     ',1f16.8,' s')"
-    write(outunit,format_string)  real(timeFlagger,kind=8) / real(clock_rate,kind=8)
-    write(*,format_string) real(timeFlagger,kind=8) / real(clock_rate,kind=8)
-    format_string = "('         Total    Bufnst     time (clock)     ',1f16.8,' s')"
-    write(outunit,format_string)  real(timeBufnst,kind=8) / real(clock_rate,kind=8)
-    write(*,format_string) real(timeBufnst,kind=8) / real(clock_rate,kind=8)
 
-    format_string = "('   Total gfixup     time  (clock)   ',1f16.8,' s')"
-    write(outunit,format_string)  real(timeGrdfit2,kind=8) / real(clock_rate,kind=8)
-    write(*,format_string) real(timeGrdfit2,kind=8) / real(clock_rate,kind=8)
-    format_string = "('      Total filval (wall) time      ',1f16.8,' s')"
-    write(outunit,format_string)  real(timeFilvalTot,kind=8) / real(clock_rate,kind=8)
-    write(*,format_string) real(timeFilvalTot,kind=8) / real(clock_rate,kind=8)
+    format_string="('All levels:')"
+    write(*,format_string)
+    write(outunit,format_string)
 
-   format_string = "('          Total filval (all cores) time     ',1f16.8,' s')"
-    write(outunit,format_string)  real(timeFilval,kind=8) / real(clock_rate,kind=8)
-    write(*,format_string) real(timeFilval,kind=8) / real(clock_rate,kind=8)
+
+
+    !stepgrid
+    format_string="('stepgrid      ',1f15.3,'        ',1f15.3,'    ',e17.3)"
+    write(outunit,format_string) &
+         real(timeStepgrid,kind=8) / real(clock_rate,kind=8), timeStepgridCPU
+    write(*,format_string) &
+         real(timeStepgrid,kind=8) / real(clock_rate,kind=8), timeStepgridCPU
+
+    !bound
+    format_string="('BC/ghost cells',1f15.3,'        ',1f15.3)"
+    write(outunit,format_string) &
+         real(timeBound,kind=8) / real(clock_rate,kind=8), timeBoundCPU
+    write(*,format_string) &
+         real(timeBound,kind=8) / real(clock_rate,kind=8), timeBoundCPU
+
+    !regridding time
+    format_string="('Regridding    ',1f15.3,'        ',1f15.3,'  ')"
+    write(outunit,format_string) &
+    		real(timeRegridding,kind=8) / real(clock_rate,kind=8), timeRegriddingCPU
+    write(*,format_string) &
+    		real(timeRegridding,kind=8) / real(clock_rate,kind=8), timeRegriddingCPU
+
+    !output time
+    format_string="('Output (valout)',1f14.3,'        ',1f15.3,'  ')"
+    write(outunit,format_string) &
+    		real(timeValout,kind=8) / real(clock_rate,kind=8), timeValoutCPU
+    write(*,format_string) &
+    		real(timeValout,kind=8) / real(clock_rate,kind=8), timeValoutCPU
 
     write(*,*)
-    format_string = "('Total setaux (all cores) time     ',1f16.8,' s')"
-    write(outunit,format_string)  real(timeSetaux,kind=8) / real(clock_rate,kind=8)
-    write(*,format_string) real(timeSetaux,kind=8) / real(clock_rate,kind=8)
+    write(outunit,*)
+
+    !Total Time
+    format_string="('Total time:   ',1f15.3,'        ',1f15.3,'  ')"
+    write(outunit,format_string) &
+    		real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8), &
+    		cpu_finish-cpu_start
+    write(*,format_string) &
+    		real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8), &
+    		cpu_finish-cpu_start
+
+    format_string="('Using',i3,' thread(s)')"
+    write(outunit,format_string) maxthreads
+    write(*,format_string) maxthreads
 
 
     write(*,*)
-    write(*,*)" integration time, still not counting saveqc"
-    format_string = "('Total Bound (all levels) wall time      ',1f16.8,' s')"
-    write(outunit,format_string)  real(timeBound,kind=8) / real(clock_rate,kind=8)
-    write(*,format_string) real(timeBound,kind=8) / real(clock_rate,kind=8)
-    format_string = "('Total stepgrid (all levels) wall time   ',1f16.8,' s')"
-    write(outunit,format_string)  real(timeStepgrid,kind=8) / real(clock_rate,kind=8)
-    write(*,format_string) real(timeStepgrid,kind=8) / real(clock_rate,kind=8)
+    write(outunit,*)
+
+
+    write(*,"('Note: The CPU times are summed over all threads.')")
+    write(outunit,"('Note: The CPU times are summed over all threads.')")
+    write(*,"('      Total time includes more than the subroutines listed above')")
+    write(outunit,"('      Total time includes more than the subroutines listed above')")
+
+
+    !end of timing data
+    write(*,*)
+    write(outunit,*)
+    format_string="('=========================================================================')"
+    write(outunit,format_string)
+    write(*,format_string)
+    write(*,*)
+    write(outunit,*)
+
+
+
+
+    !format_string = "('Total time to solution = ',1f16.8,' s, using', i3,' threads')"
+    !write(outunit,format_string) &
+    !        real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8), maxthreads
+    !write(*,format_string) &
+    !        real(clock_finish - clock_start,kind=8) / real(clock_rate,kind=8), maxthreads
+
+    !do level = 1, mxnest
+    !  format_string = "('Total advanc time on level',i3,':',1f16.8,' s')"
+    !  write(outunit,format_string) level, &
+    !         real(tvoll(level),kind=8) / real(clock_rate,kind=8)
+    !  write(*,format_string) level, &
+    !         real(tvoll(level),kind=8) / real(clock_rate,kind=8)
+    !end do
+    !format_string = "('Total updating time:          ',1f16.8,' s')"
+    !write(outunit,format_string)  real(timeUpdating,kind=8) / real(clock_rate,kind=8)
+    !write(*,format_string) real(timeUpdating,kind=8) / real(clock_rate,kind=8)
+    !format_string = "('Total valout time:            ',1f16.8,' s')"
+    !write(outunit,format_string)  real(timeValout,kind=8) / real(clock_rate,kind=8)
+    !write(*,format_string) real(timeValout,kind=8) / real(clock_rate,kind=8)
+
+    !write(*,*)
+    !format_string = "('Total regridding time (clock):',1f16.8,' s')"
+    !write(outunit,format_string)  real(timeRegridding,kind=8) / real(clock_rate,kind=8)
+    !write(*,format_string) real(timeRegridding,kind=8) / real(clock_rate,kind=8)
+
+    !format_string = "('   Total Grdfit     time (clock):    ',1f16.8,' s')"
+    !write(outunit,format_string)  real(timeGrdfitAll,kind=8) / real(clock_rate,kind=8)
+    !write(*,format_string) real(timeGrdfitAll,kind=8) / real(clock_rate,kind=8)
+    !format_string = "('      Total Flglvl  time                ',1f16.8,' s')"
+    !write(outunit,format_string)  real(timeFlglvl,kind=8) / real(clock_rate,kind=8)
+    !write(*,format_string) real(timeFlglvl,kind=8) / real(clock_rate,kind=8)
+    !format_string = "('         Total    Flagger     time (clock)     ',1f16.8,' s')"
+    !write(outunit,format_string)  real(timeFlagger,kind=8) / real(clock_rate,kind=8)
+    !write(*,format_string) real(timeFlagger,kind=8) / real(clock_rate,kind=8)
+    !format_string = "('         Total    Bufnst     time (clock)     ',1f16.8,' s')"
+    !write(outunit,format_string)  real(timeBufnst,kind=8) / real(clock_rate,kind=8)
+    !write(*,format_string) real(timeBufnst,kind=8) / real(clock_rate,kind=8)
+
+    !format_string = "('   Total gfixup     time  (clock)   ',1f16.8,' s')"
+    !write(outunit,format_string)  real(timeGrdfit2,kind=8) / real(clock_rate,kind=8)
+    !write(*,format_string) real(timeGrdfit2,kind=8) / real(clock_rate,kind=8)
+    !format_string = "('      Total filval (wall) time      ',1f16.8,' s')"
+    !write(outunit,format_string)  real(timeFilvalTot,kind=8) / real(clock_rate,kind=8)
+    !write(*,format_string) real(timeFilvalTot,kind=8) / real(clock_rate,kind=8)
+
+    !format_string = "('          Total filval (all cores) time     ',1f16.8,' s')"
+    !write(outunit,format_string)  real(timeFilval,kind=8) / real(clock_rate,kind=8)
+    !write(*,format_string) real(timeFilval,kind=8) / real(clock_rate,kind=8)
+
+    !write(*,*)
+    !format_string = "('Total setaux (all cores) time:',1f16.8,' s')"
+    !write(outunit,format_string)  real(timeSetaux,kind=8) / real(clock_rate,kind=8)
+    !write(*,format_string) real(timeSetaux,kind=8) / real(clock_rate,kind=8)
+
+
+    !write(*,*)
+    !write(*,*)"Integration time, still not counting saveqc"
+    !format_string = "('Total Bound (all levels) wall time:   ',1f16.8,' s')"
+    !write(outunit,format_string)  real(timeBound,kind=8) / real(clock_rate,kind=8)
+    !write(*,format_string) real(timeBound,kind=8) / real(clock_rate,kind=8)
+    !format_string = "('Total stepgrid (all levels) wall time:',1f16.8,' s')"
+    !write(outunit,format_string)  real(timeStepgrid,kind=8) / real(clock_rate,kind=8)
+    !write(*,format_string) real(timeStepgrid,kind=8) / real(clock_rate,kind=8)
 
     ! Done with computation, cleanup:
     lentotsave = lentot
@@ -823,7 +873,5 @@ program amr2
     ! Close output and debug files.
     close(outunit)
     close(dbugunit)
-#ifdef USE_PDAF
-    call mpi_finalize(mpierr)
-#endif
+
 end program amr2

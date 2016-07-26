@@ -23,6 +23,7 @@
 subroutine flag2refine2(mx,my,mbc,mbuff,meqn,maux,xlower,ylower,dx,dy,t,level, &
                        tolsp,q,aux,amrflags,DONTFLAG,DOFLAG)
 
+
     use amr_module, only: mxnest, t0
     use geoclaw_module, only:dry_tolerance, sea_level
     use geoclaw_module, only: spherical_distance, coordinate_system
@@ -44,6 +45,7 @@ subroutine flag2refine2(mx,my,mbc,mbuff,meqn,maux,xlower,ylower,dx,dy,t,level, &
 
     implicit none
 
+
     ! Subroutine arguments
     integer, intent(in) :: mx,my,mbc,meqn,maux,level,mbuff
     real(kind=8), intent(in) :: xlower,ylower,dx,dy,t,tolsp
@@ -59,6 +61,8 @@ subroutine flag2refine2(mx,my,mbc,mbuff,meqn,maux,xlower,ylower,dx,dy,t,level, &
     logical :: allowflag
     external allowflag
 
+
+
     ! Generic locals
     integer :: i,j,m
     real(kind=8) :: x_c,y_c,x_low,y_low,x_hi,y_hi
@@ -68,7 +72,13 @@ subroutine flag2refine2(mx,my,mbc,mbuff,meqn,maux,xlower,ylower,dx,dy,t,level, &
     real(kind=8) :: R_eye(2), wind_speed
 
     ! Initialize flags
+
     amrflags = DONTFLAG
+!    print *,q(1,-1,-1)
+!    print *,q(2,-1,-1)
+!    print *,q
+!    print *,q(2,0,1)
+
 
     ! Loop over interior points on this grid
     ! (i,j) grid cell is [x_low,x_hi] x [y_low,y_hi], cell center at (x_c,y_c)
@@ -96,13 +106,13 @@ subroutine flag2refine2(mx,my,mbc,mbuff,meqn,maux,xlower,ylower,dx,dy,t,level, &
                     else
                         ds = sqrt((x_c - R_eye(1))**2 + (y_c - R_eye(2))**2)
                     end if
-                    
+
                     if ( ds < R_refine(m) .and. level <= m ) then
                         amrflags(i,j) = DOFLAG
                         cycle x_loop
                     endif
                 enddo
-                
+
                 ! Refine based on wind speed
                 if (wind_forcing) then
                     wind_speed = sqrt(aux(wind_index,i,j)**2 + aux(wind_index+1,i,j)**2)
@@ -171,16 +181,22 @@ subroutine flag2refine2(mx,my,mbc,mbuff,meqn,maux,xlower,ylower,dx,dy,t,level, &
             ! -----------------------------------------------------------------
             ! Refinement not forced, so check if it is allowed and if so,
             ! check if there is a reason to flag this point:
+!            if (i==50 .and. j==50) then
+!                print *, "in flag2refine"
+!            endif
             if (allowflag(x_c,y_c,t,level)) then
 
                 if (q(1,i,j) > dry_tolerance) then
                     eta = q(1,i,j) + aux(1,i,j)
+
 
                     ! Check wave criteria
                     if (abs(eta - sea_level) > wave_tolerance) then
                         ! Check to see if we are near shore
                         if (q(1,i,j) < deep_depth) then
                             amrflags(i,j) = DOFLAG
+!                            print *,q(1,i,j)
+!                            print *,DOFLAG
                             cycle x_loop
                         ! Check if we are allowed to flag in deep water
                         ! anyway

@@ -5,7 +5,7 @@
 MODULE mod_model
 
 ! !DESCRIPTION:
-! This module provides variables needed for the 
+! This module provides variables needed for the
 ! 2-dimensional tutorial model without parallelization.
 !
 ! !REVISION HISTORY:

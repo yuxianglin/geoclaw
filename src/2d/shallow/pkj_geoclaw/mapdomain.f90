@@ -1,14 +1,19 @@
 module mapdomain
         use amr_module, only: numgrids, rnode, node, lstart, ndihi, ndilo, &
         ndjhi, ndjlo, mstart, cornxlo, cornylo, levelptr
+
         use sortarr
+#ifdef USE_PDAF    
+        use mod_assimilation,only: first_assimilation
+#endif
 
         implicit none
 
         !Local integers
         integer :: a
         integer :: total_nx, total_ny
-        
+        integer :: ind,temp(1)
+
         !real(kind=8) :: total_array(10000) = 0.0
         !integer :: global_to_totalarray_map(10000) = 0
         !integer :: ptr_location(4) !Pointer
@@ -30,18 +35,29 @@ contains
                 real(kind=8), allocatable :: corner_array(:,:)
                 integer :: i_pkj
                 integer :: mptr
+!#ifdef USE_PDAF
+                if (first_assimilation) then
+!                    print *,"in get ordered array first assimilation=true"
+                    ind=1
+                else
+!                    print *,"in get ordered array first assimilation=false"
+                    temp=minloc(numgrids)! get the last non-zero number, ad-hoc
+                    ind=temp(1)-1
+                endif
+!#endif
+!                ind=1
+                allocate(mptr_array(numgrids(ind)))
+                allocate(ordered_mptr_array(numgrids(ind)))
+                allocate(corner_array(numgrids(ind),2))
 
-                allocate(mptr_array(numgrids(1)))
-                allocate(ordered_mptr_array(numgrids(1)))
-                allocate(corner_array(numgrids(1),2))
 
-                mptr = lstart(1)
 
-                do i_pkj=1,numgrids(1)
-                mptr_array(i_pkj)=mptr
-                corner_array(i_pkj,1) = rnode(cornxlo,mptr)
-                corner_array(i_pkj,2) = rnode(cornylo,mptr)
-                mptr = node(levelptr,mptr)
+                mptr = lstart(ind)
+                do i_pkj=1,numgrids(ind)
+                    mptr_array(i_pkj)=mptr
+                    corner_array(i_pkj,1) = rnode(cornxlo,mptr)
+                    corner_array(i_pkj,2) = rnode(cornylo,mptr)
+                    mptr = node(levelptr,mptr)
                 enddo
 
                 call set_global(corner_array,mptr_array,ordered_mptr_array)
@@ -49,7 +65,7 @@ contains
         end subroutine get_ordered_array
 
         !subroutine allocate_space(ptr_location, ordered_mptr_array)
-        !Allocates space for nx*ny cells and sets pointers for each domain 
+        !Allocates space for nx*ny cells and sets pointers for each domain
         subroutine allocate_space(ordered_mptr_array, ptr_location)
                 integer, intent(in) :: ordered_mptr_array(:)
                 integer,intent(inout) :: ptr_location(:)
@@ -78,7 +94,7 @@ contains
 
                 integer :: domain_num_x
                 integer :: domain_num_y
-                
+
                 !To make it generic, need a good subroutine to identify
                 !domain_num_y and domain_num_x from any number of cells in the
                 !local domains. Basically 50 must be replaced somehow
@@ -144,7 +160,7 @@ contains
                 integer,intent(inout) :: ptr_location(:)
                 real(kind=8), intent(inout) :: total_array(:)
                 integer, intent(inout) :: global_to_totalarray_map(:)
-                
+
                 !real(kind=8), intent(inout) :: total_array(:)
                 global_to_totalarray_map(counter) = ptr_location(domain_num)
                 total_array(ptr_location(domain_num)) = field_val
@@ -152,6 +168,8 @@ contains
                 print *,domain_num,ptr_location(domain_num)
 
         end subroutine fill_value
+!        subroutine field_twod2oned(field,field_1d_mptr)
+!                real
 
 !        subroutine obtain_local_domain_width(ordered_mptr_array)
 !          integer, intent(in) :: ordered_mptr_array(:)

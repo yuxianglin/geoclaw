@@ -6,18 +6,18 @@
 !   subroutine set_gauges
 !     Called initially to read from gauges.data
 !   subroutine setbestsrc
-!     Called each time regridding is done to determine which patch to 
+!     Called each time regridding is done to determine which patch to
 !     use for interpolating to each gauge location.
 !   subroutine print_gauges
 !     Called each time step for each grid patch.
 !     Refactored dumpgauge routine to interpolate for all gauges on patch.
 !
 !     Note: by default all components of q are printed at each gauge.
-!     To print something different or a different precision, modify 
+!     To print something different or a different precision, modify
 !     format statement 100 and/or the write statement that uses it.
-!   
+!
 ! Note: Updated for Clawpack 5.3.0:
-!   - the dumpgauge and setbestsrc subroutines have been moved to this module 
+!   - the dumpgauge and setbestsrc subroutines have been moved to this module
 !     and the dumpgauge subroutine has been refactored and renamed print_gauges.
 !   - dumpgauge.f must be removed from Makefiles.
 !   - setbestsrc uses quicksort to sort gauge numbers and
@@ -39,22 +39,25 @@ module gauges_module
 
 contains
 
-    subroutine set_gauges(fname)
+    subroutine set_gauges(restart, fname)
 
         use amr_module
 
         implicit none
 
         ! Input
+        logical, intent(in)  :: restart
         character(len=*), intent(in), optional :: fname
+
 
         ! Locals
         integer :: i
         integer, parameter :: iunit = 7
 
         ! Open file
+
         if (present(fname)) then
-            call opendatafile(iunit,fname)
+            call opendatafile(iunit,'gauges.data')
         else
             call opendatafile(iunit,'gauges.data')
         endif
@@ -66,21 +69,27 @@ contains
         allocate(mbestsrc(num_gauges), mbestorder(num_gauges))
         allocate(igauge(num_gauges))
         allocate(mbestg1(maxgr), mbestg2(maxgr))
-        
+
         do i=1,num_gauges
             read(iunit,*) igauge(i),xgauge(i),ygauge(i),t1gauge(i),t2gauge(i)
         enddo
 
         close(iunit)
-        
+
         ! initialize for starters
         mbestsrc = 0
 
-        ! open file for output of gauge data 
+        ! open file for output of gauge data
         ! ascii file with format determined by the write(OUTGAUGEUNIT,100)
         ! statement in print_gauges
-        open(unit=OUTGAUGEUNIT, file='fort.gauge', status='unknown', &
-                                form='formatted')
+        ! for restarts, add to end instead of clobbering original file
+        if (restart) then
+           open(unit=OUTGAUGEUNIT, file='fort.gauge', status='unknown', &
+                position='append', form='formatted')
+        else
+           open(unit=OUTGAUGEUNIT, file='fort.gauge', status='unknown', &
+                                   form='formatted')
+        endif
 
     end subroutine set_gauges
 
@@ -112,12 +121,12 @@ contains
          mbestsrc(i) = 0
       end do
 
- 
-      do 20 lev = 1, lfine  
+
+      do 20 lev = 1, lfine
           mptr = lstart(lev)
  5        do 10 i = 1, num_gauges
             if ((xgauge(i) .ge. rnode(cornxlo,mptr)) .and. &
-                (xgauge(i) .le. rnode(cornxhi,mptr)) .and. &  
+                (xgauge(i) .le. rnode(cornxhi,mptr)) .and. &
                 (ygauge(i) .ge. rnode(cornylo,mptr)) .and. &
                 (ygauge(i) .le. rnode(cornyhi,mptr)) ) then
                mbestsrc(i) = mptr
@@ -137,14 +146,14 @@ contains
 !     Sort the source arrays for easy testing during integration
       call qsorti(mbestorder,num_gauges,mbestsrc)
 
-!     After sorting,  
+!     After sorting,
 !           mbestsrc(mbestorder(i)) = grid index to be used for gauge i
 !     and mbestsrc(mbestorder(i)) is non-decreasing as i=1,2,..., num_gauges
 
 !     write(6,*) '+++ mbestorder: ',mbestorder
 !     write(6,*) '+++ mbestsrc: ',mbestsrc
 
-!     Figure out the set of gauges that should be handled on each grid:  
+!     Figure out the set of gauges that should be handled on each grid:
 !     after loop below, grid k should handle gauges numbered
 !          mbestorder(i) for i = mbestg1(k), mbestg1(k)+1, ..., mbestg2(k)
 !     This will be used for looping in print_gauges subroutine.
@@ -169,7 +178,7 @@ contains
           k1 = ki
           enddo
       if (num_gauges > 0) then
-          ! finalize 
+          ! finalize
           mbestg2(ki) = num_gauges
 !         write(6,*) '+++ ki, mbestg2(ki): ',ki,mbestg2(ki)
           endif
@@ -183,19 +192,19 @@ contains
       subroutine print_gauges(q,aux,xlow,ylow,nvar,mitot,mjtot,naux,mptr)
 !
 !     This routine is called each time step for each grid patch, to output
-!     gauge values for all gauges for which this patch is the best one to 
-!     use (i.e. at the finest refinement level).  
+!     gauge values for all gauges for which this patch is the best one to
+!     use (i.e. at the finest refinement level).
 
 !     It is called after ghost cells have been filled from adjacent grids
-!     at the same level, so bilinear interpolation can be used to 
-!     to compute values at any gauge location that is covered by this grid.  
+!     at the same level, so bilinear interpolation can be used to
+!     to compute values at any gauge location that is covered by this grid.
 
 !     The grid patch is designated by mptr.
 !     We only want to set gauges i for which mbestsrc(i) == mptr.
 !     The array mbestsrc is reset after each regridding to indicate which
 !     grid patch is best to use for each gauge.
 
-!     This is a refactoring of dumpgauge.f from Clawpack 5.2 
+!     This is a refactoring of dumpgauge.f from Clawpack 5.2
 !     Loops over only the gauges to be handled by this grid, as specified
 !     by indices from mbestg1(mptr) to mbestg2(mptr)
 
@@ -274,7 +283,7 @@ contains
            write(6,*)" BIG PROBLEM in DUMPGAUGE", i
         endif
 
-     ! ## Modified below from amrclaw/src/2d/gauges_module.f90 
+     ! ## Modified below from amrclaw/src/2d/gauges_module.f90
      ! ## to interpolate only where all four cells are
      ! ## wet, otherwise just take this cell value:
 
@@ -284,22 +293,22 @@ contains
 
         drytol2 = 0.1d0 * dry_tolerance
 
-        h(1) = q(1,iindex,jindex) 
-        h(2) = q(1,iindex+1,jindex) 
+        h(1) = q(1,iindex,jindex)
+        h(2) = q(1,iindex+1,jindex)
         h(3) = q(1,iindex,jindex+1)
-        h(4) = q(1,iindex+1,jindex+1) 
-        
+        h(4) = q(1,iindex+1,jindex+1)
+
         if ((h(1) < drytol2) .or.  &
             (h(2) < drytol2) .or.  &
             (h(3) < drytol2) .or.  &
             (h(4) < drytol2)) then
             ! One of the cells is dry, so just use value from grid cell
             ! that contains gauge rather than interpolating
-            
+
             icell = int(1.d0 + (xgauge(ii) - xlow) / hx)
             jcell = int(1.d0 + (ygauge(ii) - ylow) / hy)
             do ivar=1,3
-                var(ivar) = q(ivar,icell,jcell) 
+                var(ivar) = q(ivar,icell,jcell)
             enddo
             ! This is the bottom layer and we should figure out the
             ! topography
@@ -341,7 +350,7 @@ contains
 
 
  10     continue  ! end of loop over all gauges
- 
+
       end subroutine print_gauges
 
 end module gauges_module

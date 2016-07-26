@@ -1,9 +1,9 @@
 MODULE sortarr
     implicit none
-     
+
       contains
 
-      subroutine set_global(A,inputid,outputid) 
+      subroutine set_global(A,inputid,outputid)
       real(kind=8),intent(in) :: A(:,:)
       integer,intent(in) :: inputid(:)
       integer,intent(out) :: outputid(:)
@@ -21,40 +21,45 @@ MODULE sortarr
       num_points = size(A,2)
       !allocate(outputid(num_points))
       allocate(output_points(num_points,2))
-     
+
       output_points = A
-  
+!      print *,inputid
+
+
       do i = 1,size(inputid)
           input_point = A(i,:)
           if (firsttime .eqv. .true.) then
               outputid(1) = inputid(1)
-              output_points(i,:) = A(i,:) 
+              output_points(i,:) = A(i,:)
               firsttime = .false.
           else
               outputid(i) = inputid(i)
+!              print *,outputid
               !Check the position of input point in outputid array
               do j = 1,i-1
                   output_point = output_points(j,:)
-                  call shouldbebefore(input_point,output_point,yesno) 
+                  call shouldbebefore(input_point,output_point,yesno)
+
                   if (yesno .eqv. .true.) then
                       call swap(outputid(j),outputid(i))
                      call swaparr(output_points(j,:),output_points(i,:))
+!                      print *,outputid
                   else
                       output_points(i,:) = input_point
-                  endif 
+                  endif
               enddo
           endif
       enddo
-             
-      !print *,"input array",(A(i,:),i=1,num_points)  
+
+      !print *,"input array",(A(i,:),i=1,num_points)
       do i=1,4
-      print *,"input array",(A(i,j),j=1,2)  
+!      print *,"input array",(A(i,j),j=1,2)
       enddo
-      print *,"input id",inputid
+!      print *,"input id",inputid
       do i=1,4
-      print *,"output array",(output_points(i,j),j=1,2)
+!      print *,"output array",(output_points(i,j),j=1,2)
       enddo
-      print *,"outputid", outputid
+!      print *,"outputid", outputid
 
       !deallocate(outputid)
       deallocate(output_points)
@@ -69,7 +74,7 @@ MODULE sortarr
           a = b
           b = c
       end subroutine swap
-      
+
       subroutine swaparr(a,b)
           implicit none
           real(kind=8), intent(inout) :: a(2),b(2)

@@ -5,6 +5,9 @@ c
 c
       use geoclaw_module
       use refinement_module, only: varRefTime
+#ifdef USE_PDAF
+      use mod_parallel,only: mype_world
+#endif
 c
       use amr_module
       implicit double precision (a-h,o-z)
@@ -41,7 +44,9 @@ c
 c  set up level to be flagged. need a solution t=0,and t=dt.
 c  error estimation makes next one at t=2*dt for Richardson.
 c
+
          call advanc(levold,nvar,dtlev,vtime,naux)
+
          evol = evol + rvol
          rvol = 0.d0
          kfac = 1
@@ -49,7 +54,7 @@ c
            kfac = kfac * kratio(i)
          end do
          dtinit = min(dtinit, dtlev*kfac)
- 
+
 c        dont count it in real integration stats
          do 20 level=1,mxnest
  20         rvoll(level) = 0.d0
@@ -71,7 +76,7 @@ c
 c count number of grids on newly created levels (needed for openmp
 c parallelization). this is also  done in regridding.
 c  set up numgrids now for new level, since advanc will use it for parallel execution
-c 
+c
          mptr = lstart(levnew)
          ngrids = 0
          ncells = 0
@@ -84,16 +89,22 @@ c
           numgrids(levnew) = ngrids
           numcells(levnew) = ncells
           if (verbosity_regrid .ge. levnew) then
+#ifdef USE_PDAF
+        if (mype_world==0) then
+#endif
              write(*,100) ngrids,ncells,levnew
  100         format("there are ",i4," grids with ",i8,
      &               " cells at level ", i3)
-          endif 
+#ifdef USE_PDAF
+       endif
+#endif
+          endif
 c
       levnew = levnew + 1
       go to 10
  30   continue
 c
-c  switch location of old and new storage for soln. vals, 
+c  switch location of old and new storage for soln. vals,
 c  and reset time to 0.0 (or initial time start_time)
 c
       if (mxnest .eq. 1) go to 99
@@ -159,19 +170,24 @@ c
 c
 c        # use smaller of specified dt_initial and estimate from get_max_speed
 c        # (changed from 4.6 code where dt_initial was ignored)
-         possk(1) = min(possk(1), cfl/(spoh(1) + tiny(1.d0)))  
+         possk(1) = min(possk(1), cfl/(spoh(1) + tiny(1.d0)))
+#ifdef USE_PDAF
+        if (mype_world==0) then
+#endif
          write(*,*)"  Setting initial dt to ",possk(1)
-
+#ifdef USE_PDAF
+       endif
+#endif
 c
 c  set new time step and refinement ratios in time
 c  at this initial time just setting initial conditions
-c  important to do this from coarser to finer levels to make sure 
+c  important to do this from coarser to finer levels to make sure
 c  subcycling lines up right.
-c  this sets ratios, and possk array.  
+c  this sets ratios, and possk array.
 c  note that code below does not change coarsest level time step,
 c  this is set during timestepping or by user initially
 c
-      do level = 2, lfine   
+      do level = 2, lfine
          dtc = possk(level-1)
          dtf = cfl/(spoh(level) + tiny(1.d0))
          if (dtf .gt. dtc) then

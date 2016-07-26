@@ -18,11 +18,11 @@ subroutine ind1d_to_coord2d(index_1d, coord_2d)
 ! get the 2d coordinate of 1d index
 ! ::::::::::::::::::::::::::::::::::::::::::
 !       print *, "executing the oned to twod"
-       call get_ordered_array(mptr_array,ordered_mptr_array) 
+       call get_ordered_array(mptr_array,ordered_mptr_array)
        cellnum=0
        temp=minloc(numgrids)
        ind=temp(1)-1
-       
+
        dx=hxposs(ind)
        dy=hyposs(ind)
        do i=1,size(ordered_mptr_array)
@@ -35,8 +35,8 @@ subroutine ind1d_to_coord2d(index_1d, coord_2d)
                xlow=rnode(cornxlo,mptr)
                ylow=rnode(cornylo,mptr)
                remaining_cells=index_1d-(cellnum-nx*ny)
-               row_l=(remaining_cells -1)/nx+1
-               column_l=mod(remaining_cells -1,nx)+1
+               column_l=(remaining_cells -1)/nx+1
+               row_l=mod(remaining_cells -1,nx)+1
                coord_2d(1)=xlow+(row_l-0.5)*dx
                coord_2d(2)=ylow+(column_l-0.5)*dy
                return

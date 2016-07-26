@@ -143,6 +143,9 @@ contains
     subroutine read_qinit(fname)
     
         use geoclaw_module, only: GEO_PARM_UNIT
+#ifdef USE_PDAF
+        use mod_parallel, only:mype_world
+#endif
         
         implicit none
         
@@ -153,11 +156,15 @@ contains
         integer, parameter :: unit = 19
         integer :: i,num_points,status
         double precision :: x,y
-        
+#ifdef USE_PDAF
+       if (mype_world==0) then
+#endif
         print *,'  '
         print *,'Reading qinit data from file  ', fname
         print *,'  '
-
+#ifdef USE_PDAF
+       endif
+#endif
         write(GEO_PARM_UNIT,*) '  '
         write(GEO_PARM_UNIT,*) 'Reading qinit data from'
         write(GEO_PARM_UNIT,*) fname
