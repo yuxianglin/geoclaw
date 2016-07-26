@@ -14,7 +14,7 @@
 #    (See directory BASEDIR/make.arch for files. PDAF_ARCH is filename without .h)
 
 # Root directory of PDAF package
-BASEDIR = /h2/pkjain/Desktop/Pushkar/clawpack/geoclaw/examples/tsunami/PDAF-D_V1.11.1
+BASEDIR = ~/clawpack-5.3.1/PDAF-D_V1.11.1
 
 # Include machine-specific definitions
 # For available include files see directory make.arch
