@@ -363,7 +363,7 @@ c        if this is a restart, make sure chkpt times start after restart time
 
       call get_ordered_array(mptr_array,ordered_mptr_array)
       if (first_assimilation) then
-!          call field_conversion(ordered_mptr_array) 
+          call field_conversion() 
           !change field from natural way to mptr way
           !only needed at first time
       endif

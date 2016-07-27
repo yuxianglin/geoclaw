@@ -262,7 +262,7 @@ def setrun(claw_pkg='geoclaw'):
     amrdata = rundata.amrdata
 
     # max number of refinement levels:
-    amrdata.amr_levels_max = 1
+    amrdata.amr_levels_max = 3
 
     # List of refinement ratios at each level (length at least mxnest-1)
     amrdata.refinement_ratios_x = [2,2]
@@ -316,8 +316,11 @@ def setrun(claw_pkg='geoclaw'):
     # to specify regions of refinement append lines of the form
     #  [minlevel,maxlevel,t1,t2,x1,x2,y1,y2]
     regions.append([1, 2, 0., 1.e10, -100.,100., -100.,100.])
-    #regions.append([1, 3, 0., 1.e10,    0.,100.,    0.,100.])
-    regions.append([3, 3, 0., 1.e10,   -30., 30.,   -30., 30.])
+    regions.append([3, 3, 0., 1.e10,    -50.,-30.,    30.,50.])
+    regions.append([3, 3, 0., 1.e10,    -50.,-30.,    -50.,-30.])
+    regions.append([3, 3, 0., 1.e10,    30.,50.,    -50.,-30.])
+    regions.append([3, 3, 0., 1.e10,    30.,50.,    30.,50.])
+    regions.append([3, 3, 0., 1.e10,   -20., 20.,   -20., 20.])
     #regions.append([3, 3, 0., 1.e10,   -32., -22.,   -32.,-22.])
     #regions.append([2, 4, 3.4, 1.e10,   57., 68.,   57., 68.])
     #regions.append([2, 4, 3.4, 1.e10,   83., 92.,   -4.,  4.])

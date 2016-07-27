@@ -5,6 +5,7 @@
 !    > Created Time: Mon 25 Jul 2016 05:31:46 PM CDT
 ! ************************************************************************
       subroutine field_conversion()
+#ifdef USE_PDAF
           use amr_module
           use mod_model,only: field,nx,ny
           use mapdomain,only: get_ordered_array
@@ -36,9 +37,9 @@
             ny_l = node(ndjhi,mptr) - node(ndjlo, mptr) + 1
             Ntot=Ntot+nx_l*ny_l
             do jj=1,nx_l*ny_l
-            if (jj==1) then
-              print *,"here"
-            endif
+!            if (jj==1) then
+!              print *,"here"
+!            endif
               column_l=mod(jj-1,nx_l)+1
               row_l=(jj-1)/nx_l+1
               nxlow=node(ndilo,mptr)
@@ -51,4 +52,5 @@
             enddo
           enddo
           field=field_mptr
+#endif
       end subroutine field_conversion

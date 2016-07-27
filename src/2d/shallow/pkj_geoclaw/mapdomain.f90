@@ -35,7 +35,7 @@ contains
                 real(kind=8), allocatable :: corner_array(:,:)
                 integer :: i_pkj
                 integer :: mptr
-!#ifdef USE_PDAF
+#ifdef USE_PDAF
                 if (first_assimilation) then
 !                    print *,"in get ordered array first assimilation=true"
                     ind=1
@@ -44,7 +44,7 @@ contains
                     temp=minloc(numgrids)! get the last non-zero number, ad-hoc
                     ind=temp(1)-1
                 endif
-!#endif
+#endif
 !                ind=1
                 allocate(mptr_array(numgrids(ind)))
                 allocate(ordered_mptr_array(numgrids(ind)))
