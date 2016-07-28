@@ -26,7 +26,7 @@ _plots*
 scratch/*
 !scratch/README.txt
 ens_*
-obs.txt
+obs*.txt
 state_ini.txt
 true.txt
 PDAF_offline

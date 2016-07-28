@@ -2,12 +2,13 @@ __author__ = 'Pushkar Kumar Jain'
 
 import pandas as pd
 import numpy as np
-
+import pdb
 
 class ReadAmr(object):
     def __init__(self, filename):
         self.filename = filename
         self.Grid_level, self.Grid_lines = self.capture_data("grid_number")
+#        pdb.set_trace()
         self.AMR_level, self.AMR_lines = self.capture_data("AMR_level")
         self.mx, self.mx_lines = self.capture_data("mx")
         self.my, self.my_lines = self.capture_data("my")
@@ -25,11 +26,12 @@ class ReadAmr(object):
 
     def capture_data(self, data_string):
         value_list = []
+#        pdb.set_trace()
         line_number_list = []
         with open(self.filename, "r") as f1:
-            for unwanted_line_number, j in enumerate(f1.readlines()):
-                if data_string in j:
-                    value = j.split()
+            for unwanted_line_number, jj in enumerate(f1.readlines()):
+                if data_string in jj:
+                    value = jj.split()
                     if value[0].isdigit():
                         value_list.append(int(value[0]))
                     else:

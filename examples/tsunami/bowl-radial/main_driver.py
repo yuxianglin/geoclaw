@@ -26,7 +26,7 @@ if __name__ == "__main__":
     h2=2.0
     ens_type='randn'#linear
     ictype = "hump"
-    update_ensemble=1
+    update_ensemble=0
     total_steps = 400
     output_step_interval = 20
     delt_obs = output_step_interval
@@ -54,7 +54,7 @@ if __name__ == "__main__":
     yobs_end = 80
     nxobs =60
     nyobs =60
-    update_observation=0
+    update_observation=1
     if update_observation:
         make_obs.make_obs(xv, yv, obs_time_list, xobs_start, yobs_start, xobs_end, yobs_end, nxobs, nyobs, ictype)
         #make_obs.make_obs_testing(xv, yv, obs_time_list, xobs_start, yobs_start, xobs_end, yobs_end, nxobs, nyobs, ictype)

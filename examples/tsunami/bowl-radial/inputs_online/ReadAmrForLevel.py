@@ -3,7 +3,7 @@
 # import pandas as pd
 import numpy as np
 import read_amr
-
+import pdb
 
 class ReadAmrForLevel(read_amr.ReadAmr):
     def __init__(self, filename, amrl):
@@ -13,6 +13,7 @@ class ReadAmrForLevel(read_amr.ReadAmr):
 
         # Read raw columns
         self.total_height = self.get_mycolumn("height", amrlevel=amrl)
+        pdb.set_trace()
         self.momx = self.get_mycolumn("xvel", amrlevel=amrl)
         self.momy = self.get_mycolumn("yvel", amrlevel=amrl)
         self.eta = self.get_mycolumn("eta", amrlevel=amrl)
@@ -42,18 +43,19 @@ class ReadAmrForLevel(read_amr.ReadAmr):
         return(mxv, myv)
 
     def get_meshgrid2(self):
-        xlower = min(self.x_low[self.AMR_level==1.0])
-        ylower = min(self.y_low[self.AMR_level==1.0])
-        dx = self.dx[0]
-        dy = self.dy[0]
+        xlower = min(self.x_low[self.AMR_level==self.amrl])
+        ylower = min(self.y_low[self.AMR_level==self.amrl])
+        dx = self.dx[self.AMR_level==self.amrl]
+        dy = self.dy[self.AMR_level==self.amrl]
        
-        uniq_x,indx = np.unique(self.x_low[self.AMR_level==1.0],return_index=True)
-        uniq_y,indy = np.unique(self.y_low[self.AMR_level==1.0],return_index=True)
+        uniq_x,indx = np.unique(self.x_low[self.AMR_level==self.amrl],return_index=True)
+        uniq_y,indy = np.unique(self.y_low[self.AMR_level==self.amrl],return_index=True)
         mx = np.sum(self.mx[indx])
         my = np.sum(self.my[indy])
 
         xupper = xlower + (mx+1)*dx
         yupper = ylower + (my+1)*dy
+        pdb.set_trace()
 
         x_cell = np.linspace(xlower + dx/2.0, xupper - dx/2.0, mx)
         y_cell = np.linspace(yupper - dy/2.0, ylower + dy/2.0, my)

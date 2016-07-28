@@ -18,7 +18,7 @@ def make_obs(mxv, myv, obs_time_list, xobs_start, yobs_start, xobs_end, yobs_end
     for i,j in enumerate(obs_time_list):
 
         read_geoclaw_output = "./_output_original_" + ictype + "/fort.q" + str(i+1).zfill(4)
-        original_case = ramr.ReadAmrForLevel(read_geoclaw_output, 1.0)
+        original_case = ramr.ReadAmrForLevel(read_geoclaw_output, 3.0)
         original_water = original_case.water
         original_land = original_case.land
         #mxv = original_case.mxv
