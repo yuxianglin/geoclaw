@@ -147,6 +147,14 @@ MODULE mod_assimilation
   REAL    :: time          ! model time
 !  REAL    :: dum_ncycle    ! Cycle number
   LOGICAL :: have_obs      ! Flag whether we consider observations
-  LOGICAL :: first_assimilation=.true.
+  
+  INTEGER :: stepnow_pdaf
+  INTEGER :: assimilate_step
+  INTEGER :: ncycle_pdaf
+  LOGICAL :: global_assimilation=.true.
+!  integer,allocatable :: mptr_array(:)
+!  integer,allocatable :: ordered_mptr_array(:) 
+
+!  LOGICAL :: first_assimilation=.true.
 !$OMP threadprivate (obs_index_l,coords_l,coords_l_1d,coords_l_2d)
 END MODULE mod_assimilation

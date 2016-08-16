@@ -15,19 +15,19 @@ if __name__ == "__main__":
     #------------------------------------------------------#
     nx = 100
     ny = 100
-    xlower = -99.0
-    xupper = 99.0
-    ylower = -99.0
-    yupper = 99.0
+    xlower = -100.0
+    xupper = 100.0
+    ylower = -100.0
+    yupper = 100.0
     #------------------------------------------#
     # ensemble setup
-    num_ens =100
-    h1=6
-    h2=2.0
-    ens_type='randn'#linear
+    num_ens =4
+    h1=16.0
+    h2=4.0
+    ens_type='linear'#linear
     ictype = "hump"
     update_ensemble=0
-    total_steps = 400
+    total_steps = 600
     output_step_interval = 20
     delt_obs = output_step_interval
     #-------------------------------------_#
@@ -44,22 +44,22 @@ if __name__ == "__main__":
         #Make initial ensemble
         make_init_ens.makeinitens2(xv, yv,num_ens,h1,h2,ictype,ens_type)
         #make_init_ens.makeinitens(xv, yv, num_ens,ictype=ictype)
-        if ((nx > 50) & (ny > 50)):
-            chunk.chunk_write(range(1,num_ens+1),type1="init")
+        if ((nx > 40) & (ny > 40)):
+            chunk.chunk_write(range(1,num_ens+1),xv,yv,type1="init")
   #Make observations
    #if num_ens != 1:
-    xobs_start = 20 
-    yobs_start = 20
-    xobs_end = 80
-    yobs_end = 80
-    nxobs =60
-    nyobs =60
+    xobs_start = -30.0 
+    yobs_start = -30.0
+    xobs_end = 30.0
+    yobs_end = 30.0
+    nxobs =16
+    nyobs =16
     update_observation=1
     if update_observation:
         make_obs.make_obs(xv, yv, obs_time_list, xobs_start, yobs_start, xobs_end, yobs_end, nxobs, nyobs, ictype)
         #make_obs.make_obs_testing(xv, yv, obs_time_list, xobs_start, yobs_start, xobs_end, yobs_end, nxobs, nyobs, ictype)
-        if ((nx > 50) & (ny > 50)):
-            chunk.chunk_write(obs_time_list,type1="obs")
+#        if ((nx > 50) & (ny > 50)):
+#            chunk.chunk_write(obs_time_list,type1="obs")
 
 
 

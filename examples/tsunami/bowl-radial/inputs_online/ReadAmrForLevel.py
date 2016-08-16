@@ -9,22 +9,25 @@ class ReadAmrForLevel(read_amr.ReadAmr):
     def __init__(self, filename, amrl):
         super(ReadAmrForLevel, self).__init__(filename)
         self.amrl = amrl
-        self.mxv, self.myv = self.get_meshgrid2()
+#        pdb.set_trace()
+#        self.mxv, self.myv = self.get_meshgrid2()
 
         # Read raw columns
         self.total_height = self.get_mycolumn("height", amrlevel=amrl)
-        pdb.set_trace()
+#        pdb.set_trace()
         self.momx = self.get_mycolumn("xvel", amrlevel=amrl)
         self.momy = self.get_mycolumn("yvel", amrlevel=amrl)
         self.eta = self.get_mycolumn("eta", amrlevel=amrl)
+        self.x = self.get_mycolumn("x_center_coords", amrlevel=amrl)
+        self.y = self.get_mycolumn("y_center_coords", amrlevel=amrl)
 
         # Get eta with value in land = 0
-        self.eta_with_land = self.get_eta_with_land0()
+#        self.eta_with_land = self.get_eta_with_land0()
 
         # Get land with water masked
-        self.land = self.get_land()
+#        self.land = self.get_land()
         # Get water with land masked
-        self.water = self.get_water()
+#        self.water = self.get_water()
 
     def get_meshgrid(self):
         xlower = self.x_low[0]
@@ -45,8 +48,8 @@ class ReadAmrForLevel(read_amr.ReadAmr):
     def get_meshgrid2(self):
         xlower = min(self.x_low[self.AMR_level==self.amrl])
         ylower = min(self.y_low[self.AMR_level==self.amrl])
-        dx = self.dx[self.AMR_level==self.amrl]
-        dy = self.dy[self.AMR_level==self.amrl]
+        dx = np.unique(self.dx[self.AMR_level==self.amrl])
+        dy = np.unique(self.dy[self.AMR_level==self.amrl])
        
         uniq_x,indx = np.unique(self.x_low[self.AMR_level==self.amrl],return_index=True)
         uniq_y,indy = np.unique(self.y_low[self.AMR_level==self.amrl],return_index=True)
@@ -55,7 +58,7 @@ class ReadAmrForLevel(read_amr.ReadAmr):
 
         xupper = xlower + (mx+1)*dx
         yupper = ylower + (my+1)*dy
-        pdb.set_trace()
+#        pdb.set_trace()
 
         x_cell = np.linspace(xlower + dx/2.0, xupper - dx/2.0, mx)
         y_cell = np.linspace(yupper - dy/2.0, ylower + dy/2.0, my)
@@ -77,6 +80,7 @@ class ReadAmrForLevel(read_amr.ReadAmr):
     #    return reshaped_masked_eta_land
 
     def get_water(self):
+#        pdb.set_trace()
         masked_eta_water = np.ma.array(self.eta,
                                        mask=self.total_height == 0.0E0)
         #reshaped_masked_eta_water = np.reshape(masked_eta_water, (self.mx[0],self.my[0]))
@@ -100,8 +104,9 @@ class ReadAmrForLevel(read_amr.ReadAmr):
         # eta_with_land_matrix = eta2.as_matrix()
         eta_with_land_matrix = eta2.values
         #reshaped_eta_with_land0 = np.reshape(eta_with_land_matrix,(self.mx[0], self.my[0]))
-        reshaped_eta_with_land0 = np.reshape(eta_with_land_matrix,np.shape(self.mxv))
-        return reshaped_eta_with_land0
+#        reshaped_eta_with_land0 = np.reshape(eta_with_land_matrix,np.shape(self.mxv))
+#        return reshaped_eta_with_land0
+        return eta_with_land_matrix
 
 
 if __name__ == "__main__":

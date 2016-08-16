@@ -1,7 +1,11 @@
 import numpy as np
 
-def chunk_write(forlist,type1="init"):
+def chunk_write(forlist,xv,yv,type1="init"):
     from shutil import copyfile
+    xv1=np.flipud(xv)
+    stacked_x = np.ravel(xv1)
+    yv1=np.flipud(yv)
+    stacked_y = np.ravel(yv1)
     #for i in range(1,num_ens+1):
     for i in forlist:
         if type1=="init":
@@ -29,8 +33,11 @@ def chunk_write(forlist,type1="init"):
 #        chunk3 = np.ravel(z3[0])
 #        chunk4 = np.ravel(z3[1])
 #        stacked_array = np.row_stack((chunk1.T, chunk2.T, chunk3.T, chunk4.T))
-        stacked_array = np.ravel(z)
-        np.savetxt(srcfile,stacked_array )
+        z1=np.flipud(z)
+        stacked_z = np.ravel(z1)
+
+        q=np.column_stack((stacked_x,stacked_y,stacked_z))
+        np.savetxt(srcfile,q,fmt='%12.10f')
 #    with open(srcfile,"ab") as f:
 #        np.savetxt(f,chunk1, fmt='%12.10f')
 #        np.savetxt(f,chunk2,fmt='%12.10f')

@@ -21,7 +21,7 @@ c :::::::::::::::::::::::::::::::::::::::;::::::::::::::::::::
       hx    = hxposs(level)
       hy    = hyposs(level)
       mptr  = msave
- 
+
  10       nx      = node(ndihi,mptr) - node(ndilo,mptr) + 1
           ny      = node(ndjhi,mptr) - node(ndjlo,mptr) + 1
           mitot   = nx + 2*nghost
@@ -38,7 +38,7 @@ c :::::::::::::::::::::::::::::::::::::::;::::::::::::::::::::
                 end do
                 call setaux(nghost,nx,ny,corn1,corn2,hx,hy,
      &                    naux,alloc(locaux))
-              else 
+              else
                 locaux = 1
               endif
               node(storeaux,mptr) = locaux
@@ -58,11 +58,13 @@ c
           locaux  = node(storeaux,mptr)
 c
    30     continue
+*          print *,'calling qinit'
           call qinit(nvar,nghost,nx,ny,corn1,corn2,hx,hy,
      &               alloc(loc),naux,alloc(locaux))
 
 
           mptr  = node(levelptr, mptr)
+*          print *,node(1,1:10)
       if (mptr .ne. 0) go to 10
 c
 c

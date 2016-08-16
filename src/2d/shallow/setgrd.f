@@ -89,15 +89,15 @@ c
           numgrids(levnew) = ngrids
           numcells(levnew) = ncells
           if (verbosity_regrid .ge. levnew) then
-#ifdef USE_PDAF
-        if (mype_world==0) then
-#endif
+*#ifdef USE_PDAF
+*        if (mype_world==0) then
+*#endif
              write(*,100) ngrids,ncells,levnew
  100         format("there are ",i4," grids with ",i8,
      &               " cells at level ", i3)
-#ifdef USE_PDAF
-       endif
-#endif
+*#ifdef USE_PDAF
+*       endif
+*#endif
           endif
 c
       levnew = levnew + 1

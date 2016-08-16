@@ -31,7 +31,7 @@ SUBROUTINE init_pdaf()
        rms_obs, model_error, model_err_amp, incremental, covartype, &
        type_forget, forget, dim_bias, rank_analysis_enkf, &
        locweight, local_range, srange, int_rediag, filename, &
-       type_trans, type_sqrt, delt_obs
+       type_trans, type_sqrt, delt_obs,assimilate_step,stepnow_pdaf,ncycle_pdaf
 
   IMPLICIT NONE
 
@@ -47,17 +47,17 @@ SUBROUTINE init_pdaf()
   INTEGER :: filter_param_i(7) ! Integer parameter array for filter
   REAL    :: filter_param_r(2) ! Real parameter array for filter
   INTEGER :: status_pdaf       ! PDAF status flag
-  !INTEGER :: doexit, steps
-  !REAL    :: timenow
+  INTEGER :: doexit, steps
+  REAL    :: timenow
   CHARACTER(len=9) :: filename_pdaf = 'pdaf.data'
   LOGICAL :: there
 
   ! External subroutines
   EXTERNAL :: init_ens         ! Ensemble initialization
-  !EXTERNAL :: next_observation_pdaf, & ! Provide time step, model time,
+  EXTERNAL :: next_observation_pdaf, & ! Provide time step, model time,
   !                                     ! and dimension of next observation
-  !     distribute_state_pdaf, &        ! Routine to distribute a state vector to model fields
-  !     prepoststep_ens_pdaf            ! User supplied pre/poststep routine
+       distribute_state_pdaf, &        ! Routine to distribute a state vector to model fields
+       prepoststep_ens_pdaf            ! User supplied pre/poststep routine
 
 
 ! ***************************
@@ -69,7 +69,8 @@ SUBROUTINE init_pdaf()
   END IF
 
   ! *** Define state dimension ***
-  dim_state_p = nx * ny
+ ! dim_state_p = nx * ny
+!print *,dim_state_p
 
 
 ! **********************************************************
@@ -82,7 +83,7 @@ SUBROUTINE init_pdaf()
 ! *** IO options ***
   screen      = 2  ! Write screen output (1) for output, (2) add timings
 
-
+  
 ! *** Filter specific variables
 
    inquire(FILE=filename_pdaf, EXIST=there)
@@ -115,6 +116,9 @@ SUBROUTINE init_pdaf()
        read(22, *) local_range! Size of ensemble for all ensemble filters
    close(22)
    endif
+ stepnow_pdaf=0
+ assimilate_step=delt_obs
+ ncycle_pdaf=0
   subtype = 0       ! subtype of filter:
                     !   ESTKF:
                     !     (0) Standard form of ESTKF
@@ -238,7 +242,7 @@ SUBROUTINE init_pdaf()
 ! *** Prepare ensemble forecasts ***
 ! ******************************'***
 
-!  CALL PDAF_get_state(steps, timenow, doexit, next_observation_pdaf, &
-!       distribute_state_pdaf, prepoststep_ens_pdaf, status_pdaf)
+  CALL PDAF_get_state(steps, timenow, doexit, next_observation_pdaf, &
+       distribute_state_pdaf, prepoststep_ens_pdaf, status_pdaf)
 
 END SUBROUTINE init_pdaf

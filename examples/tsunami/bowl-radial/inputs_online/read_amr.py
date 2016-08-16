@@ -8,7 +8,6 @@ class ReadAmr(object):
     def __init__(self, filename):
         self.filename = filename
         self.Grid_level, self.Grid_lines = self.capture_data("grid_number")
-#        pdb.set_trace()
         self.AMR_level, self.AMR_lines = self.capture_data("AMR_level")
         self.mx, self.mx_lines = self.capture_data("mx")
         self.my, self.my_lines = self.capture_data("my")
@@ -16,11 +15,14 @@ class ReadAmr(object):
         self.y_low, self.y_low_lines = self.capture_data("ylow")
         self.dx, self.dx_lines = self.capture_data("dx")
         self.dy, self.dy_lines = self.capture_data("dy")
+#        pdb.set_trace()
         self.pandas_dataframe = self.amrdataframe()
 
 
     def get_mycolumn(self, column,amrl):
-        mycolumn_data = self.pandas_dataframe[column][self.pandas_dataframe.amrlevel==amrl]
+#        mycolumn_data = self.pandas_dataframe[column][self.pandas_dataframe.amrlevel==amrl]
+#        pdb.set_trace()
+        mycolumn_data = self.pandas_dataframe[column][amrl]
         return mycolumn_data
 
 
@@ -45,8 +47,8 @@ class ReadAmr(object):
         #data = pd.read_table(self.filename, header=None, names = ["height","xvel","yvel","eta"], index_col=False, sep=r"\s+", dtype=object)
         data = data.dropna()
         data=data.reset_index(drop=True)
-        xmain = np.array([])
-        ymain = np.array([])
+        xcoords = np.array([])
+        ycoords = np.array([])
 
         for num,levelnum in enumerate(self.AMR_level):
             if num == 0:
@@ -55,26 +57,38 @@ class ReadAmr(object):
                 firstpoint = firstpoint + self.mx[num-1]*self.my[num-1]
             secondpoint = firstpoint + self.mx[num]*self.my[num]
             data.loc[firstpoint:secondpoint, 'amrlevel'] = levelnum 
-            x_left = self.x_low[num] + self.dx[num]/2.0
-            x_right = self.x_low[num] + self.dx[num]*self.mx[num] - self.dx[num]/2.0
-            y_down = self.y_low[num] + self.dy[num]/2.0
-            y_up = self.y_low[num] + self.dy[num]*self.my[num] - self.dy[num]/2.0
-            xrow = np.linspace(x_left , x_right, num = self.mx[num],dtype='float64')
-            #yrow = np.linspace(y_up , y_down, num = self.my[num])
-            yrow = np.linspace(y_down , y_up, num = self.my[num],dtype='float64')
+#            pdb.set_trace()
+#            x_left = self.x_low[num] + self.dx[num]/2.0
+            x_left=self.x_low[num]
+            y_down=self.y_low[num]
+#            mptr_xcoord=np.ones(self.mx[num]*self.my[num])*x_left
+#            mptr_xcoord=np.ones(self.mx[num]*self.my[num])*y_down
+            dx=self.dx[num];dy=self.dy[num];mx=self.mx[num];my=self.my[num]
+            x_left = x_left +dx/2.0
+            y_down = y_down +dy/2.0
+            x_right = x_left + dx*(mx-1)
+            y_up    = y_down + dy*(my-1)
+            xrow = np.linspace(x_left , x_right, mx,dtype='float64')
+            yrow = np.linspace(y_down , y_up,    my,dtype='float64')
             xmesh,ymesh = np.meshgrid(xrow,yrow)
-            xmain = np.append(xmain, np.ravel(xmesh))
-            ymain = np.append(ymain, np.ravel(ymesh))
+#            pdb.set_trace()
+            xcoords = np.append(xcoords, np.ravel(xmesh))
+#            xmain = np.append(xmain, mptr_xcoord)
+#            ymain = np.append(ymain, mptr_ycoord)
+            ycoords = np.append(ycoords, np.ravel(ymesh))
         #xseries = pd.Series(xmain, name='xcoord')
         #yseries = pd.Series(ymain, name='ycoord')
         #data = pd.concat([data,xseries,yseries], axis=1) 
         #data.assign(xcoord = xmain)
-        data["xcoord"]=xmain
-        data["ycoord"]=ymain
+#        pdb.set_trace()
+        data["x_center_coords"]=xcoords
+        data["y_center_coords"]=ycoords
+#        data["mptr_xcoord"]=xmain
+#        data["mptr_ycoord"]=ymain
 
         #Rearranging xcoord and ycoord as per domain mesh
         #data.sort_index(by=['amrlevel','ycoord', 'xcoord'], ascending=[True,True,True],inplace=True)
-        data.sort_values(by=['amrlevel','ycoord', 'xcoord'], ascending=[True,True,True],inplace=True)
+#        data.sort_values(by=['amrlevel','mptr_ycoord', 'mptr_xcoord'], ascending=[True,True,True],inplace=True)
         return data
 
      

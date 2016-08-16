@@ -33,7 +33,12 @@ include $(BASEDIR)/make.arch/$(PDAF_ARCH).h
 .SUFFIXES: .F90 .o 
 
 # Modules used for the model part
-MODULES =  	mod_model.o
+MODULES =  mod_model.o
+#USER_SUPPLIED_MODULES= alloc_field_exchange.o\
+                         mapdomain.o 
+
+
+
 
 # Model routines
 OBJ_MODEL =	main.o\
@@ -55,8 +60,7 @@ OBJ_PDAF_INT =  init_parallel_pdaf.o \
 		init_pdaf.o \
 		init_pdaf_parse.o \
 		init_pdaf_info.o \
-		finalize_pdaf.o 
-		#assimilate_pdaf.o
+		finalize_pdaf.o assimilate_pdaf.o
 
 # Generic user-supplied routines
 OBJ_USER_GEN  = init_ens.o \
@@ -91,7 +95,7 @@ OBJ_USER_LOCAL = init_n_domains_pdaf.o \
 		init_obsvar_l_pdaf.o \
 
 #OBJ_USER_DOMAIN = oned_to_twod.o \
-		  twod_to_oned.o
+#		  twod_to_oned.o
 
 # Full list of user-supplied routines for online modes
 #OBJ_PDAF_USER = $(OBJ_USER_GEN) $(OBJ_USER_SEIK) $(OBJ_USER_ENKF) $(OBJ_USER_LOCAL)

@@ -500,7 +500,13 @@ program amr2
         dxmin = hxposs(mxnest)
         dymin = hyposs(mxnest)
 
-        call domain(nvar,vtime,nx,ny,naux,t0)
+
+
+!   print *,field(4950)
+   call domain(nvar,vtime,nx,ny,naux,t0)
+
+
+
 
         ! Hold off on gauges until grids are set.
         ! The fake call to advance at the very first timestep
@@ -589,18 +595,28 @@ program amr2
     close(parmunit)
 
 #ifdef USE_PDAF
-!Allocate memory for temporary field in PDAF
-! *** Screen output ***
-    total_steps = nstop
+#ifdef USE_PDAF
+   total_steps = nstop
     WRITE (*, '(1x, a)') 'INITIALIZE GEOCLAW with PDAF'
     WRITE (*, '(10x,a,i4,1x,a1,1x,i4)') 'Grid size:', nx, 'x', ny
     WRITE (*, '(10x,a,i4)') 'Time steps: ', total_steps
     dtinit=possk(1)
+    ALLOCATE(field(ny*nx))
+    CALL init_pdaf()
+
+#endif
+!Allocate memory for temporary field in PDAF
+! *** Screen output ***
+!    total_steps = nstop
+!    WRITE (*, '(1x, a)') 'INITIALIZE GEOCLAW with PDAF'
+!    WRITE (*, '(10x,a,i4,1x,a1,1x,i4)') 'Grid size:', nx, 'x', ny
+!    WRITE (*, '(10x,a,i4)') 'Time steps: ', total_steps
+!    dtinit=possk(1)
 
    !ALLOCATE(field(ny+2*nghost,nx+2*nghost))
    !ALLOCATE(field(ny,nx))
    !ALLOCATE(field(ny,nx))
-   ALLOCATE(field(ny*nx))
+!   ALLOCATE(field(ny*nx))
 
   ! ************************************
   ! *** Read initial field from file ***
@@ -616,10 +632,10 @@ program amr2
   !CLOSE(15)
 
 #endif
-#ifdef USE_PDAF
-     CALL init_pdaf()
-
-#endif
+!#ifdef USE_PDAF
+!     CALL init_pdaf()
+!
+!#endif
 
 
 

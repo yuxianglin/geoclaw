@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import read_amr
 import chunk
-
+import pdb
 
 def make_obs(mxv, myv, obs_time_list, xobs_start, yobs_start, xobs_end, yobs_end, nxobs, nyobs, ictype):
 
@@ -17,23 +17,34 @@ def make_obs(mxv, myv, obs_time_list, xobs_start, yobs_start, xobs_end, yobs_end
 
     for i,j in enumerate(obs_time_list):
 
+
         read_geoclaw_output = "./_output_original_" + ictype + "/fort.q" + str(i+1).zfill(4)
         original_case = ramr.ReadAmrForLevel(read_geoclaw_output, 3.0)
-        original_water = original_case.water
-        original_land = original_case.land
+#        original_water = original_case.water
+#        original_land = original_case.land
         #mxv = original_case.mxv
         #myv = original_case.myv
-
+		
+#        pdb.set_trace() 
+        eta=original_case.get_eta_with_land0()
+        xx=original_case.x
+        yy=original_case.y
+        xyeta=np.column_stack((xx,yy,eta))	
+        length=len(eta)
+#        pdb.set_trace()
+        if i==0:
+			obs_ind=np.random.choice(range(length),length*0.01,replace=False)
         #Construct observations
         obs_file = "obs_step"+str(j)+".txt"
+        obs=xyeta[obs_ind,:]
         savefile = "obs_step" + str(j) + ".pdf"
-        obs_mat[obs_xv,obs_yv] = original_water[obs_xv,obs_yv]
+#        obs_mat[obs_xv,obs_yv] = original_water[obs_xv,obs_yv]
 
-        print "Observation at chosen location - ",obs_mat[obs_xv,obs_yv] 
+#        print "Observation at chosen location - ",obs_mat[obs_xv,obs_yv] 
         print "Writing observation file - ", obs_file
-        np.savetxt(obs_file, obs_mat, fmt = "%12.10f")
-        obs_mat_water = np.ma.array(obs_mat,mask = original_case.land==0.0)
-        obs_mat_land = original_case.land
+        np.savetxt(obs_file,obs, fmt = "%12.10f")
+#        obs_mat_water = np.ma.array(obs_mat,mask = original_case.land==0.0)
+#        obs_mat_land = original_case.land
 
 
 #        plotmap.docontour(mxv,myv,obs_mat_water, obs_mat_land, "Observation", -999.0, 1.0, savefile=savefile)

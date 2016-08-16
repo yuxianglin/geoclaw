@@ -173,7 +173,7 @@ SUBROUTINE prepoststep_ens_pdaf(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
 
      WRITE (*, '(8x, a)') '--- write ensemble and state estimate'
 
-     ALLOCATE(field(ny*nx))
+     ALLOCATE(field(dim_p))
 
     !Set string for time step
      IF (step>=0) THEN
@@ -190,6 +190,7 @@ SUBROUTINE prepoststep_ens_pdaf(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
         !DO i = 1, ny
         !   field(i, 1:nx) = ens_p(1 + (i-1)*nx : i*nx, member)
         !END DO
+
         field(:) = ens_p(:,member)
 
         WRITE (ensstr, '(i3.2)') member

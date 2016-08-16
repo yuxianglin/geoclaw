@@ -27,7 +27,7 @@ SUBROUTINE init_dim_obs_l_pdaf(domain_p, step, dim_obs_f, dim_obs_l)
        ONLY: local_range, coords_obs, coords_l, obs_index_l, coords_l_1d,&
        coords_l_2d
   USE mod_model, &
-       ONLY: nx, ny
+       ONLY: xlow,xhigh,ylow,yhigh
 
   IMPLICIT NONE
 
@@ -46,7 +46,7 @@ SUBROUTINE init_dim_obs_l_pdaf(domain_p, step, dim_obs_f, dim_obs_l)
 
 ! *** local variables ***
   INTEGER :: i, cnt                   ! Counters
-  INTEGER :: limits_x(2), limits_y(2) ! Coordinate limites for observation domain
+  REAL(KIND=8) :: limits_x(2), limits_y(2) ! Coordinate limites for observation domain
   REAL :: distance                    ! Distance between observation and analysis domain
 
 
@@ -66,7 +66,9 @@ SUBROUTINE init_dim_obs_l_pdaf(domain_p, step, dim_obs_f, dim_obs_l)
 !          print *,"here"
 !        endif
   call ind1d_to_coord2d(coords_l_1d, coords_l_2d)
-!   print *, coords_l_2d
+!   print *, "coord_2d=",coords_l_2d
+!   print *,dim_obs_f
+!   stop
   !Determine coordinate limits for observation domain
 !  limits_x(1) = coords_l(1) - local_range
 !  if (limits_x(1) < 1) limits_x(1) = 1
@@ -79,14 +81,14 @@ SUBROUTINE init_dim_obs_l_pdaf(domain_p, step, dim_obs_f, dim_obs_l)
 !  if (limits_y(2) > ny) limits_y(2) = ny
 
   limits_x(1) = coords_l_2d(1) - local_range
-  if (limits_x(1) < 1) limits_x(1) = 1
+  if (limits_x(1) < xlow) limits_x(1) = xlow
   limits_x(2) = coords_l_2d(1) + local_range
-  if (limits_x(2) > nx) limits_x(2) = nx
+  if (limits_x(2) > xhigh) limits_x(2) = xhigh
 
   limits_y(1) = coords_l_2d(2) - local_range
-  if (limits_y(1) < 1) limits_y(1) = 1
+  if (limits_y(1) < ylow) limits_y(1) = ylow
   limits_y(2) = coords_l_2d(2) + local_range
-  if (limits_y(2) > ny) limits_y(2) = ny
+  if (limits_y(2) > yhigh) limits_y(2) = yhigh
 
   ! Count observations within local_range
   dim_obs_l = 0
@@ -102,13 +104,21 @@ SUBROUTINE init_dim_obs_l_pdaf(domain_p, step, dim_obs_f, dim_obs_l)
 !     ENDIF
 !     print *,coords_obs(1, 15)
 !     print *,coords_obs(2, 15)
+
+!     if (domain_p==6) then
+!         print *,coords_l_2d
+!         print *,coords_obs(1,1)
+!         print *,coords_obs(2,1)
+!         print *,limits_x,limits_y
+!         stop
+!     endif
+
   DO i = 1, dim_obs_f
      IF (coords_obs(1, i) >= limits_x(1) .AND. coords_obs(1, i) <= limits_x(2) .AND. &
           coords_obs(2, i) >= limits_y(1) .AND. coords_obs(2, i) <= limits_y(2)) THEN
 !          if (i==900+(17-1)*50+1) then
 !             print *,"here"
 !          endif
-
         distance = SQRT(REAL((coords_l_2d(1) - coords_obs(1,i))**2 + &
              (coords_l_2d(2) - coords_obs(2,i))**2))
         IF (distance <= REAL(local_range)) THEN
@@ -117,7 +127,6 @@ SUBROUTINE init_dim_obs_l_pdaf(domain_p, step, dim_obs_f, dim_obs_l)
         ENDIF
      END IF
   END DO
-
   ! Initialize index array for local observations in full observed vector
   IF (ALLOCATED(obs_index_l)) DEALLOCATE(obs_index_l)
   ALLOCATE(obs_index_l(dim_obs_l))

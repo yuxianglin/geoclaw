@@ -4,6 +4,7 @@
 # options, and then includes the standard makefile pointed to by CLAWMAKE.
 CLAWMAKE = $(CLAW)/clawutil/src/Makefile.common
 PDAFLIB = $(CLAW)/geoclaw/src/2d/shallow/assimilation
+PDAFSRCLIB=$(CLAW)/PDAF-D_V1.11.1/src
 
 # See the above file for details and a list of make options, or type
 #   make .help
@@ -21,12 +22,13 @@ SETPLOT_FILE = setplot.py      # File containing function to set plots
 PLOTDIR = _plots               # Directory for plots
 
 # Environment variable FC should be set to fortran compiler, e.g. gfortran
-FC :=gfortran
+FC :=mpif90
+#FC :=gfortran
 
 # Compiler flags can be specified here or set as an environment variable
 #FFLAGS ?= -cpp -DUSE_PDAF -I$(PDAFLIB) -L$(PDAFLIB) -lpdaf-d -I$(PDAFLIB)/dummympi -lblas -llapack
-#FFLAGS ?= -cpp -DUSE_PDAF -I$(PDAFLIB) -L$(PDAFLIB) -lpdaf-d -lblas -llapack -lm #-l/user/include/mpich
-FFLAGS ?= -cpp -fopenmp
+FFLAGS ?= -cpp -DUSE_PDAF -I$(PDAFLIB) -L$(PDAFLIB) -lpdaf-d -lblas -llapack -fbounds-check#-l/user/include/mpich
+#FFLAGS ?= -cpp -fopenmp
 
 
 # ---------------------------------
@@ -54,6 +56,7 @@ MODULES = \
  $(GEOLIB)/friction_module.f90 \
  $(GEOLIB)/sortarr.f90 \
  $(GEOLIB)/pkj_geoclaw/mapdomain.f90 \
+# $(GEOLIB)/pkj_geoclaw/alloc_field_exchange.f90 \
 
 SOURCES = \
   $(GEOLIB)/setprob.f90 \
@@ -179,8 +182,12 @@ SOURCES = \
   $(AMRLIB)/init_alloc.f90 \
   $(AMRLIB)/restrt_alloc.f90 \
   $(AMRLIB)/resize_alloc.f90 \
-  $(GEOLIB)/oned_to_twod.f90 \
-  $(GEOLIB)/field_conversion.f90 \
+  $(GEOLIB)/pkj_geoclaw/alloc2field.f90 \
+  $(GEOLIB)/pkj_geoclaw/field2alloc.f90 \
+  $(GEOLIB)/pkj_geoclaw/oned_to_twod.f90 \
+  $(GEOLIB)/pkj_geoclaw/get_dim_state.f90 \
+  $(GEOLIB)/pkj_geoclaw/get_obs.f90 \
+#  $(GEOLIB)/pkj_geoclaw/field_conversion.f90 \
 
 #-------------------------------------------------------------------
 # Include Makefile containing standard definitions and make options:

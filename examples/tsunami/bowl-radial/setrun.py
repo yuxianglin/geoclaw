@@ -316,11 +316,11 @@ def setrun(claw_pkg='geoclaw'):
     # to specify regions of refinement append lines of the form
     #  [minlevel,maxlevel,t1,t2,x1,x2,y1,y2]
     regions.append([1, 2, 0., 1.e10, -100.,100., -100.,100.])
-    regions.append([3, 3, 0., 1.e10,    -50.,-30.,    30.,50.])
-    regions.append([3, 3, 0., 1.e10,    -50.,-30.,    -50.,-30.])
-    regions.append([3, 3, 0., 1.e10,    30.,50.,    -50.,-30.])
-    regions.append([3, 3, 0., 1.e10,    30.,50.,    30.,50.])
-    regions.append([3, 3, 0., 1.e10,   -20., 20.,   -20., 20.])
+#    regions.append([3, 3, 0., 1.e10,    -50.,-30.,    30.,50.])
+#    regions.append([3, 3, 0., 1.e10,    -50.,-30.,    -50.,-30.])
+#    regions.append([3, 3, 0., 1.e10,    30.,50.,    -50.,-30.])
+#    regions.append([3, 3, 0., 1.e10,    30.,50.,    30.,50.])
+    regions.append([3, 3, 0., 1.e10,   -40., 40.,   -40., 40.])
     #regions.append([3, 3, 0., 1.e10,   -32., -22.,   -32.,-22.])
     #regions.append([2, 4, 3.4, 1.e10,   57., 68.,   57., 68.])
     #regions.append([2, 4, 3.4, 1.e10,   83., 92.,   -4.,  4.])
@@ -430,7 +430,7 @@ def set_PDAF(rundata):
     rundata.pdaf_data.num_ensembles = 4
     rundata.pdaf_data.rms_obs = 0.00001
     rundata.pdaf_data.delt_obs = 20
-    rundata.pdaf_data.local_range= 200
+    rundata.pdaf_data.local_range= 0
     return rundata
 
 if __name__ == '__main__':

@@ -58,7 +58,7 @@ SUBROUTINE distribute_state_pdaf(dim_p, state_p)
   !Make sure state_p has data as per geoclaw configuration: left to right
   ! and then row-wise
 
-
+  if (.not. allocated(field)) allocate(field(dim_p))
      field(:) = state_p(:)
 
 

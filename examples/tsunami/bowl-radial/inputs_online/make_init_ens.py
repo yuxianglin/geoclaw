@@ -39,7 +39,7 @@ def makeinitens2(xv, yv, num_ens,h1,h2, ictype = "hump",ens_type = "linear"):
         
 		for i in range(1,num_ens +1):
 			z = makeinit(xv, yv, pert(i), ictype = ictype)
-			np.savetxt("ens_"+str(i)+".txt", z, fmt='%12.10f')
+			np.savetxt("ens_"+str(i)+".txt", z)
 
     if ictype == "planewave":
         print "Not yet set for ictype planewave"
