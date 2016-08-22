@@ -101,6 +101,7 @@ c        if this is a restart, make sure chkpt times start after restart time
 c  ------ start of coarse grid integration loop. ------------------
 !
  20   if (ncycle .ge. nstop .or. time .ge. tfinal) goto 999
+!       print *,ncycle,nstop,time,tfinal
 
       if (nout .gt. 0) then
           if (nextout  .le. nout) then
@@ -346,15 +347,15 @@ c
 c      time for output?  done with the whole thing?
 c
  110      continue
-#ifdef USE_PDAF
-      call assimilate_pdaf(nvar,naux,mxnest,time)
-#else
+
 
 
 21        time    = time   + possk(1)
           ncycle  = ncycle + 1
           call conck(1,nvar,naux,time,rest)
-
+#ifdef USE_PDAF
+      call assimilate_pdaf(nvar,naux,mxnest,time)
+#else
 !#ifndef USE_PDAF
       if ( .not.vtime) goto 201
 

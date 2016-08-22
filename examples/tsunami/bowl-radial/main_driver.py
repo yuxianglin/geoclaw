@@ -54,7 +54,7 @@ if __name__ == "__main__":
     yobs_end = 30.0
     nxobs =16
     nyobs =16
-    update_observation=1
+    update_observation=0
     if update_observation:
         make_obs.make_obs(xv, yv, obs_time_list, xobs_start, yobs_start, xobs_end, yobs_end, nxobs, nyobs, ictype)
         #make_obs.make_obs_testing(xv, yv, obs_time_list, xobs_start, yobs_start, xobs_end, yobs_end, nxobs, nyobs, ictype)
@@ -91,7 +91,7 @@ if __name__ == "__main__":
 #            total_steps)
     #------------------------------------------------------#
    # #Error analysis
-#    error_analysis.error_calc(ictype, num_time_steps, ploterror=True)
+    error_analysis.error_calc(ictype, num_time_steps, ploterror=True)
     #------------------------------------------------------#
     #------------------------------------------------------#
     #Vizualization

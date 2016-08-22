@@ -33,7 +33,8 @@ def make_obs(mxv, myv, obs_time_list, xobs_start, yobs_start, xobs_end, yobs_end
         length=len(eta)
 #        pdb.set_trace()
         if i==0:
-			obs_ind=np.random.choice(range(length),length*0.01,replace=False)
+#			obs_ind=np.random.choice(range(length),int(length*1.0),replace=False)
+           obs_ind=np.linspace(0,length,int(length*0.9),endpoint=False,dtype='int32')
         #Construct observations
         obs_file = "obs_step"+str(j)+".txt"
         obs=xyeta[obs_ind,:]
@@ -42,7 +43,7 @@ def make_obs(mxv, myv, obs_time_list, xobs_start, yobs_start, xobs_end, yobs_end
 
 #        print "Observation at chosen location - ",obs_mat[obs_xv,obs_yv] 
         print "Writing observation file - ", obs_file
-        np.savetxt(obs_file,obs, fmt = "%12.10f")
+        np.savetxt(obs_file,obs, fmt = "%18.16f")
 #        obs_mat_water = np.ma.array(obs_mat,mask = original_case.land==0.0)
 #        obs_mat_land = original_case.land
 

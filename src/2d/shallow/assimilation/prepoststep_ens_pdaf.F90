@@ -91,7 +91,7 @@ SUBROUTINE prepoststep_ens_pdaf(step, dim_p, dim_ens, dim_ens_p, dim_obs_p, &
 ! **********************
 ! *** INITIALIZATION ***
 ! **********************
-
+!print *, 'I am process ',mype_world
   IF (firsttime) THEN
      WRITE (*, '(8x, a)') 'Analyze initial state ensemble'
      anastr = 'ini'

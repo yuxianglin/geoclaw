@@ -27,7 +27,7 @@ FC :=mpif90
 
 # Compiler flags can be specified here or set as an environment variable
 #FFLAGS ?= -cpp -DUSE_PDAF -I$(PDAFLIB) -L$(PDAFLIB) -lpdaf-d -I$(PDAFLIB)/dummympi -lblas -llapack
-FFLAGS ?= -cpp -DUSE_PDAF -I$(PDAFLIB) -L$(PDAFLIB) -lpdaf-d -lblas -llapack -fbounds-check#-l/user/include/mpich
+FFLAGS ?= -cpp -DUSE_PDAF -I$(PDAFLIB) -L$(PDAFLIB) -lpdaf-d -lblas -llapack -fbounds-check
 #FFLAGS ?= -cpp -fopenmp
 
 

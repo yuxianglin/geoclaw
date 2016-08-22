@@ -93,7 +93,6 @@ SUBROUTINE assimilate_pdaf(nvar,naux,mxlevel,time_geoclaw)
    if (stepnow_pdaf==assimilate_step) then
        
        call alloc2field(nvar,naux)
-       print *,'(1,1) before get state is',field(25311)
         if(mype_world==0) write(*,'(a,5x,a)') 'PDAF','Perform assimilation with PDAF '
         if (filtertype==2) then
              CALL PDAF_put_state_enkf(collect_state_pdaf,&
@@ -101,10 +100,10 @@ SUBROUTINE assimilate_pdaf(nvar,naux,mxlevel,time_geoclaw)
                  prepoststep_ens_pdaf, add_obs_error_pdaf,&
                  init_obscovar_pdaf,status_pdaf)
         else if (filtertype==1) then
-             CALL PDAF_put_state_seik(collect_state_pdaf,&
+             CALL PDAF_put_state_seik(collect_state_pdaf,distribute_state_pdaf,&
                  init_dim_obs_pdaf, obs_op_pdaf, init_obs_pdaf,&
                  prepoststep_ens_pdaf, prodRinvA_pdaf,&
-                 init_obsvar_pdaf, status_pdaf)
+                 init_obsvar_pdaf,next_observation_pdaf, status_pdaf)
         else if (filtertype==4) then
              CALL PDAF_put_state_etkf(collect_state_pdaf,&
                  init_dim_obs_pdaf, obs_op_pdaf, init_obs_pdaf,&
@@ -157,29 +156,31 @@ SUBROUTINE assimilate_pdaf(nvar,naux,mxlevel,time_geoclaw)
 !                 INQUIRE(file='state_step'//trim(adjustl(cyclestr))//'_ana.txt',exist=there)
                  INQUIRE(file=fname,exist=there)
                  if (there) then
-                     open(15,file=fname,status='old')
+!                     print *,'state_step'//trim(adjustl(cyclestr))//'_ana.txt'
+!                     open(15,file='state_step'//trim(adjustl(cyclestr))//'_ana.txt',status='old')
+!                     print *,fname
+                    open(15,file=fname,status='old')
                      read(15,*) field
                      close(15)
                  else
                      print *,'Cannot find assimilate file: ',fname
-!                     call abort_parallel()
-                     stop
+                     call abort_parallel()
                  endif
                  call field2alloc(nvar,naux,.true.)
                  if (mxlevel /=1) then
-                     do ii=mxlevel-1,1!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                     do ii=mxlevel -1,1
                        call update(ii,nvar,naux)
                      enddo
                  endif
                  call valout(1,mxlevel,time_geoclaw,nvar,naux)
+                 print *,'outputed'
              endif output
 !             print *,'before get state'
-             call MPI_barrier(mpi_comm_world,mpierr)
+!             call MPI_barrier(mpi_comm_world,mpierr)
 !             print *, "I am process", mype_world
 !             call MPI_barrier(mpi_comm_world,mpierr)
              call PDAF_get_state(steps,time_pdaf,doexit,next_observation_pdaf,&
                  distribute_state_pdaf,prepoststep_ens_pdaf,status_pdaf)
-             print *,'(1,1) after get state is',field(25311)
 !             print *, "I am process", mype_world
 !             call MPI_barrier(mpi_comm_world,mpierr)
              stepnow_pdaf=0
@@ -188,7 +189,7 @@ SUBROUTINE assimilate_pdaf(nvar,naux,mxlevel,time_geoclaw)
              
 
              if (mxlevel /=1) then
-                 do ii=mxlevel -1,1!!!!!!!!!!!!
+                 do ii=mxlevel -1,1
                    call update(ii,nvar,naux)
                  enddo
              endif

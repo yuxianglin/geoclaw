@@ -426,11 +426,11 @@ def set_PDAF(rundata):
 
 #    pdb.set_trace()
     rundata.add_data(geoclaw.PDAFData(), 'pdaf_data')
-    rundata.pdaf_data.filtertype = 7
+    rundata.pdaf_data.filtertype = 6
     rundata.pdaf_data.num_ensembles = 4
     rundata.pdaf_data.rms_obs = 0.00001
     rundata.pdaf_data.delt_obs = 20
-    rundata.pdaf_data.local_range= 0
+    rundata.pdaf_data.local_range= 80
     return rundata
 
 if __name__ == '__main__':

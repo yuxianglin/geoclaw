@@ -5,10 +5,12 @@ import matplotlib.pyplot as plt
 import plotmap
 import ReadAmrForLevel as ramr
 import finderror
+import pdb
 
 
 def calcerror(ictype, num_time_steps):
     for t in range(num_time_steps):
+#        pdb.set_trace()
         original_file = "../_output_original_" + ictype + "/fort.q000" + str(t)
         df_original = pd.read_csv(original_file, dtype = np.float64, header=None, names=["total_height", "xmom", "ymom", "eta"], index_col=False, skip_blank_lines=True, skiprows=8, sep=r"\s+")
 
@@ -35,36 +37,38 @@ def print_full(x, filename):
 
 def error_calc(ictype, num_time_steps, ploterror=True):
     for i in range(num_time_steps):
-        original_file = "../_output_original_" + ictype + "/fort.q" + str(i).zfill(4)
-        original_case = ramr.ReadAmrForLevel(original_file, 1) 
+        #pdb.set_trace()
+        original_file = "./_output_original_" + ictype + "/fort.q" + str(i+1).zfill(4)
+        original_case = ramr.ReadAmrForLevel(original_file, 3) 
 
-        test_file = "../_output/fort.q" + str(i).zfill(4)
-        test_case = ramr.ReadAmrForLevel(test_file, 1)
-
+        test_file = "./_output/fort.q" + str(i+1).zfill(4)
+        test_case = ramr.ReadAmrForLevel(test_file, 3)
         error = finderror.error_between_geoclaw(test_case, original_case, "relative")
-        error_pct = finderror.error_between_geoclaw(test_case, original_case, "percent")
+#        error_pct = finderror.error_between_geoclaw(test_case, original_case, "percent")
         #error_water = np.ma.masked_array(error, mask=df_original["total_height"] == 0)
-        print "timestep = " + str(i)
-        print "L_2 norm = ", norm(error.water[~error.water.mask]) 
-        print "L_inf norm = ", norm(error.water[~error.water.mask],np.inf)
+        print "timestep = " + str(i+1)
+#        pdb.set_trace()
+        err=error.eta_err()
+        print "L_2 norm = ", norm(err,np.inf) 
+#        print "L_inf norm = ", norm(error.water[~error.water.mask],np.inf)
 
         #Plot parameters
-        if ploterror:
-            plot_title = "Error at timestep " + str(i)
-            vmin = -0.0001
-            vmax = 0.0001
-            savefile = "error_state"+str(i) + ".pdf"
-            plotmap.class_contour(error, plot_title, vmin, vmax, savefile=savefile)
-        
-        print "Max error percentage = ",norm(error_pct.water[~error_pct.water.mask],np.inf)
-        print ""
-        #plt.figure(i+6)
-        if ploterror:
-            plot_title = "timestep = " + str(i)
-            vmin = -20.0
-            vmax = 20.0
-            savefile="errorpct_state"+str(i)
-            plotmap.class_contour(error_pct, plot_title, vmin, vmax,savefile=None)
+#        if ploterror:
+#            plot_title = "Error at timestep " + str(i)
+#            vmin = -0.0001
+#            vmax = 0.0001
+#            savefile = "error_state"+str(i) + ".pdf"
+#            plotmap.class_contour(error, plot_title, vmin, vmax, savefile=savefile)
+#        
+#        print "Max error percentage = ",norm(error_pct.water[~error_pct.water.mask],np.inf)
+#        print ""
+#        #plt.figure(i+6)
+#        if ploterror:
+#            plot_title = "timestep = " + str(i)
+#            vmin = -20.0
+#            vmax = 20.0
+#            savefile="errorpct_state"+str(i)
+#            plotmap.class_contour(error_pct, plot_title, vmin, vmax,savefile=None)
 
 
 if __name__ == "__main__":

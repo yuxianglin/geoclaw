@@ -46,8 +46,10 @@
                       .and.(y<up))
 !                  have_obs=any(obs_flag)
 !                  print *,have_obs                  
-                  if (have_obs) cnt=cnt+1
+                  if (have_obs) then 
+                      cnt=cnt+1
 !                      print *,left,right,down,up 
+                  endif 
               enddo
           enddo
 
@@ -82,9 +84,15 @@
                         q_local=pack(q,obs_flag)! for 1d array will pick
 !                        out elements from mask obs_flag
                         obs(cnt1)=sum(q_local)/size(q_local)
+
+
                         call ind1d_to_coord2d(cnt0,temp_coord_obs_2d)
                         coords_obs(1,cnt1)=temp_coord_obs_2d(1)
                         coords_obs(2,cnt1)=temp_coord_obs_2d(2)
+                        
+!                        print *,left,right,down,up,size(q_local),&
+!                            obs(cnt1),coords_obs(1,cnt1),&
+!                            coords_obs(2,cnt1),cnt0,cnt1
                     endif
                 endif
               enddo

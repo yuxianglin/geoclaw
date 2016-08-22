@@ -92,6 +92,7 @@ subroutine alloc2field(nvar,naux)
             enddo
           enddo
         enddo
+!        print *,'finish alloc to field'
 !       deallocate(mptr_array)
 !       deallocate(ordered_mptr_array)
 !       print *,alloc(iadd(1,3,3))

@@ -27,12 +27,6 @@ SUBROUTINE init_dim_obs_f_pdaf(step, dim_obs_f)
 ! Later revisions - see svn log
 !
 ! !USES:
-  USE mod_assimilation, &
-       !ONLY : obs, obs_index, coords_obs
-       ONLY : obs, obs_index, coords_obs_1d, coords_obs_2d, coords_obs,dim_state_p
-  USE mod_model, &
-       ONLY: nx, ny
-  USE mod_parallel,only: abort_parallel
 
   IMPLICIT NONE
 
@@ -45,7 +39,7 @@ SUBROUTINE init_dim_obs_f_pdaf(step, dim_obs_f)
   REAL(KIND=8):: x,y
   REAL(KIND=8),ALLOCATABLE :: xx(:),yy(:),qq(:)
   INTEGER :: i,IO
-  INTEGER ::cnt0,cnt1,cnt2
+  INTEGER :: cnt0
 
 
   INTERFACE
@@ -96,113 +90,3 @@ SUBROUTINE init_dim_obs_f_pdaf(step, dim_obs_f)
 
 
 END SUBROUTINE init_dim_obs_f_pdaf
-
-
-
-
-
-
-
-
-
-!! *** Local variables
-!  INTEGER :: i, j                     ! Counters
-!  INTEGER :: cnt, cnt0 ,cnt1               ! Counters
-!  REAL(KIND=8) ::   X
-!  integer :: IO=0
-!  !REAL, ALLOCATABLE :: obs_field(:,:) ! Array for observation field read from file
-!  REAL, ALLOCATABLE :: obs_field(:) ! Array for observation field read from file
-!  real(kind=8) :: temp_coord_obs_2d(2)
-!
-!! *********************************************
-!! *** Initialize full observation dimension ***
-!! *********************************************
-!
-!  ! Read observation field form file
-!  !ALLOCATE(obs_field(ny, nx))
-!  ALLOCATE(obs_field(dim_state_p))
-!!  print *,dim_state_p
-!
-!  WRITE (stepstr, '(i4)') step
-!  fname='../obs_step'//TRIM(ADJUSTL(stepstr))//'.txt'
-!  fname=trim(adjustl(fname))
-!  cnt1=0
-!  OPEN (12, file= fname,status='old')
-!
-!  DO WHILE (IO==0)
-!     READ(12,*,IOSTAT=IO) X
-!     IF(IO==0) cnt1=cnt1+1
-!  ENDDO 
-!  if (cnt1 /= dim_state_p) then
-!      print *,'dimension of state field is ',dim_state_p
-!      print *,fname,'has dimention of ',cnt1
-!      print *,'mismatch'
-!      call abort_parallel()
-!  endif
-!  rewind(12)
-!  READ (12, *) obs_field
-!  CLOSE (12)
-!!  print *,obs_field(10000)
-!! stop
-!  ! Count observations
-!  cnt = 0
-!!  DO i = 1, ny
-!!     DO j = 1, nx
-!!        IF (obs_field(i,j) > -999.0) cnt = cnt + 1
-!!     END DO
-!!  END DO
-!  DO j = 1, dim_state_p
-!     IF (obs_field(j) > -999.0) cnt = cnt + 1
-!  END DO
-!
-!  ! Set number of observations
-!  dim_obs_f = cnt
-!
-!  ! Initialize vector of observations and index array
-!  IF (ALLOCATED(obs_index)) DEALLOCATE(obs_index)
-!  IF (ALLOCATED(obs)) DEALLOCATE(obs)
-!  IF (ALLOCATED(coords_obs)) DEALLOCATE(coords_obs)
-!  IF (ALLOCATED(coords_obs_1d)) DEALLOCATE(coords_obs_1d)
-!  IF (ALLOCATED(coords_obs_2d)) DEALLOCATE(coords_obs_2d)
-!  ALLOCATE(obs_index(dim_obs_f))
-!  ALLOCATE(obs(dim_obs_f))
-!  ALLOCATE(coords_obs(2, dim_obs_f))
-!  ALLOCATE(coords_obs_1d(dim_obs_f))
-!  ALLOCATE(coords_obs_2d(2,dim_obs_f))
-!
-!  cnt = 0
-!  cnt0 = 0
-!
-!
-!   DO j = 1, dim_state_p
-!    cnt0 = cnt0 + 1
-!    IF (obs_field(j) > -999.0) THEN
-!       cnt = cnt + 1
-!       obs_index(cnt) = cnt0      ! Index of observation in state vector
-!       obs(cnt) = obs_field(j) ! Vector of observations
-!!       if (j==2500+(21-1)*50+1) then
-!!          print *,"here
-!!       endif
-!       !coords_obs(cnt)=j
-!!       if (j>=6450) then
-!!          print *,"here"
-!!        endif
-!!       print *,"calling 1d22d"
-!       call ind1d_to_coord2d(cnt0,  temp_coord_obs_2d)
-!!       print *,"end calling 1d22d"
-!       coords_obs(1, cnt) = temp_coord_obs_2d(1)
-!       coords_obs(2, cnt) = temp_coord_obs_2d(2)
-!!       coords_obs(1,1)=0.0
-!!       print *,coords_obs(1,1:5)
-!!       print *,coords_obs(2,1:5)
-!    END IF
-! END DO
-!! print *, coords_obs(1,1:61)
-!! print *, coords_obs(2,1:61)
-!
-!! *** Clean up ***
-!
-!  DEALLOCATE(obs_field)
-!
-!END SUBROUTINE init_dim_obs_f_pdaf
-

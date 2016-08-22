@@ -73,6 +73,7 @@ subroutine field2alloc(nvar,naux,isoutput)
          enddo
        enddo
 !       deallocate(field)
+!      print *,'finish field to alloc'
       if (.not. isoutput) then ! only for output, not need to deallcate
           deallocate(mptr_array)
           deallocate(ordered_mptr_array)

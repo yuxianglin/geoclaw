@@ -55,6 +55,7 @@ SUBROUTINE obs_op_f_pdaf(step, dim_p, dim_obs_f, state_p, m_state_p)
 
   DO i = 1, dim_obs_f
      m_state_p(i) = state_p(obs_index(i))
+!          print *,state_p(7501)
   END DO
 
 END SUBROUTINE obs_op_f_pdaf

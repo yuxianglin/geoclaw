@@ -31,7 +31,7 @@ MODULE mod_assimilation
   INTEGER :: dim_state_p         ! Model state dimension for PE-local domain
   INTEGER, ALLOCATABLE :: local_dims(:)  ! Array for local state dimensions
 
-  REAL, ALLOCATABLE    :: obs(:)          ! Vector holding all observations
+  REAL(8), ALLOCATABLE    :: obs(:)          ! Vector holding all observations
   INTEGER, ALLOCATABLE :: obs_index(:)    ! Vector holding state-vector indices of observations
   INTEGER, ALLOCATABLE :: obs_index_l(:)  ! Vector holding local state-vector indices of observations
   REAL, ALLOCATABLE :: coords_obs(:,:) ! Array for observation coordinates
@@ -151,7 +151,7 @@ MODULE mod_assimilation
   INTEGER :: stepnow_pdaf
   INTEGER :: assimilate_step
   INTEGER :: ncycle_pdaf
-  LOGICAL :: global_assimilation=.true.
+  LOGICAL :: global_assimilation=.false.
 !  integer,allocatable :: mptr_array(:)
 !  integer,allocatable :: ordered_mptr_array(:) 
 

@@ -60,6 +60,7 @@ SUBROUTINE distribute_state_pdaf(dim_p, state_p)
 
   if (.not. allocated(field)) allocate(field(dim_p))
      field(:) = state_p(:)
+     print *,"successfully ditribute to field"
 
 
 END SUBROUTINE distribute_state_pdaf

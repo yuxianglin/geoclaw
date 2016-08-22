@@ -67,7 +67,7 @@ END IF
 !  print *, "stepnow = ", stepnow
 !  print *,"dt = ", dt
 !  print *,"mod_time after = ", mod_time
-
+! print *,'I am prcess ',mype_world,'in next observation'
   setexit: IF (stepnow == total_steps) THEN
       !Already at final time step
       if (mype_world==0) WRITE (*, '(i7, 3x, a)') &
